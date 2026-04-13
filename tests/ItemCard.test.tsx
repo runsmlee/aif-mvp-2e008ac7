@@ -1,0 +1,107 @@
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ItemCard } from '../src/components/ItemCard';
+import type { ToolItem } from '../src/types';
+
+const availableItem: ToolItem = {
+  id: '1',
+  name: 'Power Drill',
+  category: 'Power Tools',
+  condition: 'Good',
+  notes: 'Cordless',
+  borrow: null,
+};
+
+const lentItem: ToolItem = {
+  id: '2',
+  name: 'Hammer',
+  category: 'Hand Tools',
+  condition: 'Excellent',
+  notes: '',
+  borrow: {
+    borrowerName: 'Maria',
+    borrowDate: '2026-04-10',
+    returnDate: '2026-04-20',
+  },
+};
+
+const overdueItem: ToolItem = {
+  id: '3',
+  name: 'Ladder',
+  category: 'Household',
+  condition: 'Fair',
+  notes: '',
+  borrow: {
+    borrowerName: 'John',
+    borrowDate: '2026-04-01',
+    returnDate: '2026-04-10',
+  },
+};
+
+describe('ItemCard', () => {
+  it('renders item name, category, condition, and status badge', () => {
+    render(
+      <ItemCard item={availableItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />
+    );
+    expect(screen.getByText('Power Drill')).toBeInTheDocument();
+    expect(screen.getByText('Power Tools')).toBeInTheDocument();
+    expect(screen.getByText('Good')).toBeInTheDocument();
+  });
+
+  it('shows "Available" badge for items with no borrower', () => {
+    render(
+      <ItemCard item={availableItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />
+    );
+    expect(screen.getByText('Available')).toBeInTheDocument();
+  });
+
+  it('shows "Lent" badge and borrower info for borrowed items', () => {
+    render(
+      <ItemCard item={lentItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />
+    );
+    expect(screen.getByText('Lent')).toBeInTheDocument();
+    expect(screen.getByText('Maria')).toBeInTheDocument();
+    expect(screen.getByText(/Due Apr 20, 2026/)).toBeInTheDocument();
+  });
+
+  it('shows "Overdue" badge when return date is in the past', () => {
+    render(
+      <ItemCard item={overdueItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />
+    );
+    expect(screen.getByText('Overdue')).toBeInTheDocument();
+  });
+
+  it('borrow button opens inline borrow form', () => {
+    render(
+      <ItemCard item={availableItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /borrow/i }));
+    expect(screen.getByLabelText(/Borrower name/i)).toBeInTheDocument();
+  });
+
+  it('return button resets item to available status', () => {
+    const onReturn = vi.fn();
+    render(
+      <ItemCard item={lentItem} onBorrow={vi.fn()} onReturn={onReturn} onDelete={vi.fn()} onUpdate={vi.fn()} />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /return/i }));
+    expect(onReturn).toHaveBeenCalledWith('2');
+  });
+
+  it('edit button enables inline editing mode', () => {
+    render(
+      <ItemCard item={availableItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+    // In edit mode, save button should appear
+    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+  });
+
+  it('delete button removes item and calls onDelete callback', () => {
+    const onDelete = vi.fn();
+    render(
+      <ItemCard item={availableItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={onDelete} onUpdate={vi.fn()} />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+    expect(onDelete).toHaveBeenCalledWith('1');
+  });
+});
