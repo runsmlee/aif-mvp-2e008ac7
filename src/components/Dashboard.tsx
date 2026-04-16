@@ -21,7 +21,7 @@ export function Dashboard({ items, onFilter, activeFilter }: DashboardProps) {
 
       <button
         onClick={() => onFilter('available')}
-        className={`inline-flex h-7 items-center rounded-full px-3 text-xs font-semibold transition-all duration-200 ${
+        className={`inline-flex h-8 items-center rounded-full px-3 text-xs font-semibold transition-all duration-200 ${
           activeFilter === 'available'
             ? 'bg-emerald-100 text-emerald-700 shadow-sm ring-1 ring-emerald-200'
             : 'bg-surface text-text-secondary hover:bg-emerald-50 hover:text-emerald-700 active:scale-[0.97]'
@@ -34,7 +34,7 @@ export function Dashboard({ items, onFilter, activeFilter }: DashboardProps) {
 
       <button
         onClick={() => onFilter('lent')}
-        className={`inline-flex h-7 items-center rounded-full px-3 text-xs font-semibold transition-all duration-200 ${
+        className={`inline-flex h-8 items-center rounded-full px-3 text-xs font-semibold transition-all duration-200 ${
           activeFilter === 'lent'
             ? 'bg-amber-100 text-amber-700 shadow-sm ring-1 ring-amber-200'
             : 'bg-surface text-text-secondary hover:bg-amber-50 hover:text-amber-700 active:scale-[0.97]'
@@ -47,7 +47,7 @@ export function Dashboard({ items, onFilter, activeFilter }: DashboardProps) {
 
       <button
         onClick={() => onFilter('overdue')}
-        className={`inline-flex h-7 items-center rounded-full px-3 text-xs font-semibold transition-all duration-200 ${
+        className={`inline-flex h-8 items-center rounded-full px-3 text-xs font-semibold transition-all duration-200 ${
           activeFilter === 'overdue'
             ? 'bg-red-100 text-red-700 shadow-sm ring-1 ring-red-200'
             : 'bg-surface text-text-secondary hover:bg-red-50 hover:text-red-700 active:scale-[0.97]'
@@ -61,7 +61,7 @@ export function Dashboard({ items, onFilter, activeFilter }: DashboardProps) {
       {activeFilter !== 'all' && (
         <button
           onClick={() => onFilter('all')}
-          className="inline-flex h-7 items-center text-xs font-medium text-text-tertiary transition-colors duration-200 hover:text-text-secondary"
+          className="inline-flex h-8 items-center text-xs font-medium text-text-tertiary transition-colors duration-200 hover:text-text-secondary"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
             <path d="M18 6L6 18M6 6l12 12" />

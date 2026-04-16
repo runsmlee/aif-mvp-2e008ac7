@@ -196,7 +196,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
           {status === 'available' && (
             <button
               onClick={() => setShowBorrowForm(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-amber-600 hover:shadow-sm active:scale-[0.97]"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-amber-600 hover:shadow-sm active:scale-[0.97]"
               aria-label={`Borrow ${item.name}`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -210,7 +210,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
           {status !== 'available' && (
             <button
               onClick={() => onReturn(item.id)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-sm active:scale-[0.97]"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-sm active:scale-[0.97]"
               aria-label={`Return ${item.name}`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -222,7 +222,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
           )}
           <button
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.97]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2.5 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.97]"
             aria-label={`Edit ${item.name}`}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -233,7 +233,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
           </button>
           <button
             onClick={() => onDelete(item.id)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-600 transition-all duration-200 hover:bg-red-100 hover:border-red-300 active:scale-[0.97]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-600 transition-all duration-200 hover:bg-red-100 hover:border-red-300 active:scale-[0.97]"
             aria-label={`Delete ${item.name}`}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

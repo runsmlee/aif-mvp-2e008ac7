@@ -151,6 +151,14 @@ export function App() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-secondary">
+      {/* Skip to content link for keyboard users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+      >
+        Skip to content
+      </a>
+
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-surface/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4 sm:px-6">
@@ -170,7 +178,7 @@ export function App() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
+      <main id="main-content" className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
         {/* Dashboard & Search */}
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Dashboard items={items} onFilter={setStatusFilter} activeFilter={statusFilter} />
