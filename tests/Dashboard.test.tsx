@@ -39,26 +39,26 @@ const mockItems: ToolItem[] = [
 
 describe('Dashboard', () => {
   it('displays total item count', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} activeFilter="all" />);
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
     expect(screen.getByText(/3 items/)).toBeInTheDocument();
   });
 
   it('displays available item count with correct badge color', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} activeFilter="all" />);
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
     const availableBadge = screen.getByText('1 Available');
     expect(availableBadge).toBeInTheDocument();
     expect(availableBadge.className).toContain('emerald');
   });
 
   it('displays lent item count with correct badge color', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} activeFilter="all" />);
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
     const lentBadge = screen.getByText('1 Lent');
     expect(lentBadge).toBeInTheDocument();
     expect(lentBadge.className).toContain('amber');
   });
 
   it('displays overdue item count with correct badge color', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} activeFilter="all" />);
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
     const overdueBadge = screen.getByText('1 Overdue');
     expect(overdueBadge).toBeInTheDocument();
     expect(overdueBadge.className).toContain('red');
@@ -66,8 +66,29 @@ describe('Dashboard', () => {
 
   it('clicking a status filter calls onFilter callback', () => {
     const onFilter = vi.fn();
-    render(<Dashboard items={mockItems} onFilter={onFilter} activeFilter="all" />);
+    render(<Dashboard items={mockItems} onFilter={onFilter} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
     fireEvent.click(screen.getByText('1 Lent'));
     expect(onFilter).toHaveBeenCalledWith('lent');
+  });
+
+  it('renders category filter chips for each category present in items', () => {
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
+    expect(screen.getByText('Power Tools')).toBeInTheDocument();
+    expect(screen.getByText('Hand Tools')).toBeInTheDocument();
+    expect(screen.getByText('Household')).toBeInTheDocument();
+  });
+
+  it('clicking a category filter calls onCategoryFilter callback', () => {
+    const onCategoryFilter = vi.fn();
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={onCategoryFilter} activeFilter="all" activeCategory="all" />);
+    fireEvent.click(screen.getByText('Power Tools'));
+    expect(onCategoryFilter).toHaveBeenCalledWith('Power Tools');
+  });
+
+  it('clicking active category filter deselects it (shows all)', () => {
+    const onCategoryFilter = vi.fn();
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={onCategoryFilter} activeFilter="all" activeCategory="Power Tools" />);
+    fireEvent.click(screen.getByText('Power Tools'));
+    expect(onCategoryFilter).toHaveBeenCalledWith('all');
   });
 });

@@ -1,23 +1,41 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { ToastProvider, useToast } from './hooks/useToast';
 import { Dashboard } from './components/Dashboard';
 import { SearchBar } from './components/SearchBar';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
 import { DataManagement } from './components/DataManagement';
-import type { ToolItem, StatusFilter } from './types';
+import type { ToolItem, StatusFilter, ItemCategory } from './types';
 import { getItemStatus } from './types';
 
+type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'status';
+
 export function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
+  );
+}
+
+function AppContent() {
   const [items, setItems] = useLocalStorage<ToolItem[]>('toolshelf-items', []);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<ItemCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
+  const { addToast } = useToast();
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    const filtered = items.filter((item) => {
       // Status filter
       if (statusFilter !== 'all' && getItemStatus(item) !== statusFilter) {
+        return false;
+      }
+      // Category filter
+      if (categoryFilter !== 'all' && item.category !== categoryFilter) {
         return false;
       }
       // Search filter
@@ -31,14 +49,35 @@ export function App() {
       }
       return true;
     });
-  }, [items, statusFilter, searchQuery]);
+
+    // Sort items
+    return filtered.sort((a, b) => {
+      switch (sortOption) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'newest':
+          return b.id.localeCompare(a.id);
+        case 'oldest':
+          return a.id.localeCompare(b.id);
+        case 'status': {
+          const statusOrder: Record<string, number> = { overdue: 0, lent: 1, available: 2 };
+          return statusOrder[getItemStatus(a)] - statusOrder[getItemStatus(b)];
+        }
+        default:
+          return 0;
+      }
+    });
+  }, [items, statusFilter, categoryFilter, searchQuery, sortOption]);
 
   const handleAddItem = useCallback(
     (item: ToolItem) => {
       setItems((prev) => [...prev, item]);
       setShowForm(false);
+      addToast({ message: `"${item.name}" added to your shelf`, type: 'success' });
     },
-    [setItems]
+    [setItems, addToast]
   );
 
   const handleBorrow = useCallback(
@@ -57,24 +96,36 @@ export function App() {
             : item
         )
       );
+      const item = items.find((i) => i.id === id);
+      if (item) {
+        addToast({ message: `"${item.name}" lent to ${data.borrowerName}`, type: 'success' });
+      }
     },
-    [setItems]
+    [setItems, items, addToast]
   );
 
   const handleReturn = useCallback(
     (id: string) => {
+      const item = items.find((i) => i.id === id);
       setItems((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, borrow: null } : item))
+        prev.map((i) => (i.id === id ? { ...i, borrow: null } : i))
       );
+      if (item) {
+        addToast({ message: `"${item.name}" returned`, type: 'success' });
+      }
     },
-    [setItems]
+    [setItems, items, addToast]
   );
 
   const handleDelete = useCallback(
     (id: string) => {
-      setItems((prev) => prev.filter((item) => item.id !== id));
+      const item = items.find((i) => i.id === id);
+      setItems((prev) => prev.filter((i) => i.id !== id));
+      if (item) {
+        addToast({ message: `"${item.name}" removed`, type: 'info' });
+      }
     },
-    [setItems]
+    [setItems, items, addToast]
   );
 
   const handleUpdate = useCallback(
@@ -82,8 +133,9 @@ export function App() {
       setItems((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       );
+      addToast({ message: 'Item updated', type: 'success' });
     },
-    [setItems]
+    [setItems, addToast]
   );
 
   const handleExport = useCallback(
@@ -99,15 +151,17 @@ export function App() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      addToast({ message: `${data.length} items exported`, type: 'success' });
     },
-    []
+    [addToast]
   );
 
   const handleImport = useCallback(
     (data: ToolItem[]) => {
       setItems(data);
+      addToast({ message: `${data.length} items imported`, type: 'success' });
     },
-    [setItems]
+    [setItems, addToast]
   );
 
   const handlePrint = useCallback(() => {
@@ -180,10 +234,36 @@ export function App() {
       {/* Main Content */}
       <main id="main-content" className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
         {/* Dashboard & Search */}
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Dashboard items={items} onFilter={setStatusFilter} activeFilter={statusFilter} />
-          <div className="w-full sm:w-64">
-            <SearchBar onSearch={setSearchQuery} value={searchQuery} />
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1">
+            <Dashboard
+              items={items}
+              onFilter={setStatusFilter}
+              onCategoryFilter={setCategoryFilter}
+              activeFilter={statusFilter}
+              activeCategory={categoryFilter}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-full sm:w-52">
+              <SearchBar onSearch={setSearchQuery} value={searchQuery} />
+            </div>
+            <div className="w-full sm:w-32">
+              <label htmlFor="sort-select" className="sr-only">Sort items</label>
+              <select
+                id="sort-select"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                aria-label="Sort items"
+                className="w-full rounded-lg border border-border bg-surface py-2.5 pl-3 pr-8 text-xs font-medium text-text-secondary transition-all duration-200 hover:border-border-hover focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="name-asc">Name A–Z</option>
+                <option value="name-desc">Name Z–A</option>
+                <option value="status">By status</option>
+              </select>
+            </div>
           </div>
         </div>
 

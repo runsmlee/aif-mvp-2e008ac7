@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, useEffect, type FormEvent } from 'react';
 import { CATEGORIES, CONDITIONS, generateId } from '../types';
 import type { ToolItem, ItemCategory, ItemCondition } from '../types';
 
@@ -13,6 +13,14 @@ export function ItemForm({ onAdd, onCancel }: ItemFormProps) {
   const [condition, setCondition] = useState<ItemCondition>('Good');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus item name on mount
+  useEffect(() => {
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -44,6 +52,7 @@ export function ItemForm({ onAdd, onCancel }: ItemFormProps) {
         <input
           id="item-name"
           type="text"
+          ref={nameInputRef}
           value={name}
           onChange={(e) => {
             setName(e.target.value);

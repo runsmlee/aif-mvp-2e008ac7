@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, useEffect, type FormEvent } from 'react';
 
 interface BorrowFormProps {
   onBorrow: (data: { borrowerName: string; returnDate: string }) => void;
@@ -9,6 +9,14 @@ export function BorrowForm({ onBorrow, onCancel }: BorrowFormProps) {
   const [borrowerName, setBorrowerName] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [error, setError] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus borrower name on mount
+  useEffect(() => {
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, []);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -28,6 +36,7 @@ export function BorrowForm({ onBorrow, onCancel }: BorrowFormProps) {
         <input
           id="borrower-name"
           type="text"
+          ref={nameInputRef}
           value={borrowerName}
           onChange={(e) => {
             setBorrowerName(e.target.value);

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import type { ToolItem, ItemCategory, ItemCondition } from '../types';
 import { getItemStatus, CATEGORIES, CONDITIONS } from '../types';
 import { BorrowForm } from './BorrowForm';
@@ -19,10 +19,27 @@ function formatDate(dateStr: string): string {
 export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemCardProps) {
   const [showBorrowForm, setShowBorrowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [editName, setEditName] = useState(item.name);
   const [editCategory, setEditCategory] = useState<ItemCategory>(item.category);
   const [editCondition, setEditCondition] = useState<ItemCondition>(item.condition);
   const [editNotes, setEditNotes] = useState(item.notes);
+  const editNameRef = useRef<HTMLInputElement>(null);
+
+  // Sync edit state when item prop changes
+  useEffect(() => {
+    setEditName(item.name);
+    setEditCategory(item.category);
+    setEditCondition(item.condition);
+    setEditNotes(item.notes);
+  }, [item.name, item.category, item.condition, item.notes]);
+
+  // Auto-focus edit name input
+  useEffect(() => {
+    if (isEditing && editNameRef.current) {
+      editNameRef.current.focus();
+    }
+  }, [isEditing]);
 
   const status = getItemStatus(item);
 
@@ -48,6 +65,18 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
     setEditCondition(item.condition);
     setEditNotes(item.notes);
     setIsEditing(false);
+  };
+
+  const handleDeleteClick = () => {
+    setConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete(item.id);
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDelete(false);
   };
 
   const statusBadge = () => {
@@ -84,6 +113,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
             <input
               id={`edit-name-${item.id}`}
               type="text"
+              ref={editNameRef}
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-text-primary transition-all duration-200 hover:border-border-hover focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
@@ -192,7 +222,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
           <BorrowForm onBorrow={handleBorrow} onCancel={() => setShowBorrowForm(false)} />
         </div>
       ) : (
-        <div className="mt-4 flex gap-2 border-t border-border pt-4">
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
           {status === 'available' && (
             <button
               onClick={() => setShowBorrowForm(true)}
@@ -231,17 +261,37 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
             </svg>
             Edit
           </button>
-          <button
-            onClick={() => onDelete(item.id)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-600 transition-all duration-200 hover:bg-red-100 hover:border-red-300 active:scale-[0.97]"
-            aria-label={`Delete ${item.name}`}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-            </svg>
-            Delete
-          </button>
+          {confirmDelete ? (
+            <div className="flex items-center gap-2 animate-fade-in">
+              <span className="text-xs text-red-600 font-medium">Delete?</span>
+              <button
+                onClick={handleConfirmDelete}
+                aria-label="Confirm delete"
+                className="inline-flex items-center gap-1 rounded-lg bg-red-500 px-3 py-2.5 text-xs font-semibold text-white transition-all duration-200 hover:bg-red-600 active:scale-[0.97]"
+              >
+                Yes
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                aria-label="Cancel"
+                className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-3 py-2.5 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary active:scale-[0.97]"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleDeleteClick}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-600 transition-all duration-200 hover:bg-red-100 hover:border-red-300 active:scale-[0.97]"
+              aria-label={`Delete ${item.name}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              Delete
+            </button>
+          )}
         </div>
       )}
     </div>
