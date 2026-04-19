@@ -1,6 +1,7 @@
 {
   "name": "mvp-v3-2e008ac7-03b7-4472-98a5-fee043a6338a-g4adnk",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "directories": {
     "test": "tests"
