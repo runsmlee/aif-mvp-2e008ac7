@@ -27,7 +27,13 @@ export const CONDITIONS: ItemCondition[] = ['Excellent', 'Good', 'Fair', 'Poor']
 
 export function getItemStatus(item: ToolItem): ItemStatus {
   if (!item.borrow) return 'available';
-  if (item.borrow.returnDate && new Date(item.borrow.returnDate) < new Date()) return 'overdue';
+  if (item.borrow.returnDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(item.borrow.returnDate);
+    dueDate.setHours(0, 0, 0, 0);
+    if (dueDate < today) return 'overdue';
+  }
   return 'lent';
 }
 

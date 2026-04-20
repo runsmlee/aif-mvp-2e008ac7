@@ -20,7 +20,7 @@ const lentItem: ToolItem = {
   borrow: {
     borrowerName: 'Maria',
     borrowDate: '2026-04-10',
-    returnDate: '2026-04-20',
+    returnDate: '2027-04-20',
   },
 };
 
@@ -60,7 +60,7 @@ describe('ItemCard', () => {
     );
     expect(screen.getByText('Lent')).toBeInTheDocument();
     expect(screen.getByText('Maria')).toBeInTheDocument();
-    expect(screen.getByText(/Due Apr 20, 2026/)).toBeInTheDocument();
+    expect(screen.getByText(/Due Apr 20, 2027/)).toBeInTheDocument();
   });
 
   it('shows "Overdue" badge when return date is in the past', () => {

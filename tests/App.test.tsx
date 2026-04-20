@@ -47,7 +47,7 @@ describe('App', () => {
         borrow: {
           borrowerName: 'Maria',
           borrowDate: '2026-04-10',
-          returnDate: '2026-04-20',
+          returnDate: '2027-04-20',
         },
       },
     ];

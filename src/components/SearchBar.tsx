@@ -1,11 +1,14 @@
-import type { ChangeEvent } from 'react';
+import { forwardRef, type ChangeEvent } from 'react';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
   value?: string;
 }
 
-export function SearchBar({ onSearch, value = '' }: SearchBarProps) {
+export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function SearchBar(
+  { onSearch, value = '' },
+  ref
+) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     onSearch(e.target.value);
   };
@@ -35,6 +38,7 @@ export function SearchBar({ onSearch, value = '' }: SearchBarProps) {
         <path d="m21 21-4.35-4.35" />
       </svg>
       <input
+        ref={ref}
         id="search-input"
         type="text"
         placeholder="Search items..."
@@ -57,4 +61,4 @@ export function SearchBar({ onSearch, value = '' }: SearchBarProps) {
       )}
     </div>
   );
-}
+});

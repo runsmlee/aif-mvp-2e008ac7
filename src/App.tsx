@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { ToastProvider, useToast } from './hooks/useToast';
 import { Dashboard } from './components/Dashboard';
@@ -10,6 +10,11 @@ import type { ToolItem, StatusFilter, ItemCategory } from './types';
 import { getItemStatus } from './types';
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'status';
+
+function isTypingInInput(e: KeyboardEvent): boolean {
+  const target = e.target as HTMLElement;
+  return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable;
+}
 
 export function App() {
   return (
@@ -27,6 +32,19 @@ function AppContent() {
   const [showForm, setShowForm] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const { addToast } = useToast();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut: "/" to focus search
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === '/' && !isTypingInInput(e)) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const filteredItems = useMemo(() => {
     const filtered = items.filter((item) => {
@@ -246,7 +264,7 @@ function AppContent() {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-full sm:w-52">
-              <SearchBar onSearch={setSearchQuery} value={searchQuery} />
+              <SearchBar ref={searchInputRef} onSearch={setSearchQuery} value={searchQuery} />
             </div>
             <div className="w-full sm:w-32">
               <label htmlFor="sort-select" className="sr-only">Sort items</label>
@@ -308,12 +326,12 @@ function AppContent() {
               {items.length === 0 ? '🧰' : '🔍'}
             </div>
             <p className="text-base font-medium text-text-secondary">
-              {items.length === 0 ? 'No items yet' : 'No matching items'}
+              {items.length === 0 ? 'No items yet' : `No items match your filter`}
             </p>
             <p className="mt-1 text-sm text-text-tertiary">
               {items.length === 0
                 ? 'Add your first tool to get started sharing with neighbors.'
-                : 'Try adjusting your search or filter.'}
+                : `You have ${items.length} item${items.length === 1 ? '' : 's'} total. Try adjusting your search or filter.`}
             </p>
             {items.length === 0 && !showForm && (
               <button
@@ -325,6 +343,25 @@ function AppContent() {
                 </svg>
                 Add Your First Tool
               </button>
+            )}
+            {items.length > 0 && filteredItems.length === 0 && (
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {(statusFilter !== 'all' || categoryFilter !== 'all' || searchQuery) && (
+                  <button
+                    onClick={() => {
+                      setStatusFilter('all');
+                      setCategoryFilter('all');
+                      setSearchQuery('');
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                    Clear all filters
+                  </button>
+                )}
+              </div>
             )}
           </div>
         ) : (
