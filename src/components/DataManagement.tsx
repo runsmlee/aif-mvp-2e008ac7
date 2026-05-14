@@ -1,5 +1,27 @@
 import { useState, useRef } from 'react';
-import type { ToolItem } from '../types';
+import type { ToolItem, ItemCategory, ItemCondition } from '../types';
+
+const VALID_CATEGORIES: Set<string> = new Set(['Power Tools', 'Hand Tools', 'Garden', 'Household']);
+const VALID_CONDITIONS: Set<string> = new Set(['Excellent', 'Good', 'Fair', 'Poor']);
+
+function isValidItem(value: unknown): value is ToolItem {
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  if (typeof obj.id !== 'string' || !obj.id) return false;
+  if (typeof obj.name !== 'string' || !obj.name) return false;
+  if (typeof obj.category !== 'string' || !VALID_CATEGORIES.has(obj.category)) return false;
+  if (typeof obj.condition !== 'string' || !VALID_CONDITIONS.has(obj.condition)) return false;
+  if (typeof obj.notes !== 'string') return false;
+  // borrow can be null or a valid BorrowRecord
+  if (obj.borrow !== null && obj.borrow !== undefined) {
+    if (typeof obj.borrow !== 'object') return false;
+    const borrow = obj.borrow as Record<string, unknown>;
+    if (typeof borrow.borrowerName !== 'string' || !borrow.borrowerName) return false;
+    if (typeof borrow.borrowDate !== 'string') return false;
+    if (borrow.returnDate !== undefined && borrow.returnDate !== null && typeof borrow.returnDate !== 'string') return false;
+  }
+  return true;
+}
 
 interface DataManagementProps {
   items: ToolItem[];
@@ -23,12 +45,22 @@ export function DataManagement({ items, onImport, onExport }: DataManagementProp
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const data = JSON.parse(event.target?.result as string) as ToolItem[];
-        if (Array.isArray(data)) {
-          onImport(data);
-        } else {
+        const raw = JSON.parse(event.target?.result as string);
+        if (!Array.isArray(raw)) {
           setError('Invalid JSON file: expected an array of items');
+          return;
         }
+        // Validate each item has the correct shape
+        const validItems: ToolItem[] = [];
+        for (let i = 0; i < raw.length; i++) {
+          if (isValidItem(raw[i])) {
+            validItems.push(raw[i]);
+          } else {
+            setError(`Invalid item at position ${i + 1}: missing or invalid fields`);
+            return;
+          }
+        }
+        onImport(validItems);
       } catch {
         setError('Invalid JSON file');
       }

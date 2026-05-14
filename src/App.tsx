@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { ToastProvider, useToast } from './hooks/useToast';
 import { Dashboard } from './components/Dashboard';
@@ -11,16 +11,94 @@ import { getItemStatus } from './types';
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'status';
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function isTypingInInput(e: KeyboardEvent): boolean {
   const target = e.target as HTMLElement;
   return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable;
 }
 
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error('ToolShelf error:', error, errorInfo);
+  }
+
+  handleReload = (): void => {
+    this.setState({ hasError: false, error: null });
+  };
+
+  handleClearData = (): void => {
+    localStorage.clear();
+    this.setState({ hasError: false, error: null });
+  };
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-surface-secondary p-6">
+          <div className="max-w-md rounded-xl border border-border bg-surface p-8 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-2xl">
+              ⚠️
+            </div>
+            <h1 className="text-lg font-bold text-text-primary">Something went wrong</h1>
+            <p className="mt-2 text-sm text-text-secondary">
+              ToolShelf encountered an unexpected error. Your data is stored locally and should be safe.
+            </p>
+            {this.state.error && (
+              <p className="mt-2 rounded-lg bg-surface-tertiary p-3 text-xs font-mono text-text-tertiary break-all">
+                {this.state.error.message}
+              </p>
+            )}
+            <div className="mt-6 flex flex-col gap-2">
+              <button
+                onClick={this.handleReload}
+                className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-dark active:scale-[0.98]"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={this.handleClearData}
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-100 active:scale-[0.98]"
+              >
+                Clear Data &amp; Restart
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function App() {
   return (
-    <ToastProvider>
-      <AppContent />
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -100,50 +178,52 @@ function AppContent() {
 
   const handleBorrow = useCallback(
     (id: string, data: { borrowerName: string; returnDate: string }) => {
-      setItems((prev) =>
-        prev.map((item) =>
-          item.id === id
+      setItems((prev) => {
+        const item = prev.find((i) => i.id === id);
+        if (item) {
+          addToast({ message: `"${item.name}" lent to ${data.borrowerName}`, type: 'success' });
+        }
+        return prev.map((i) =>
+          i.id === id
             ? {
-                ...item,
+                ...i,
                 borrow: {
                   borrowerName: data.borrowerName,
                   borrowDate: new Date().toISOString().split('T')[0],
                   returnDate: data.returnDate,
                 },
               }
-            : item
-        )
-      );
-      const item = items.find((i) => i.id === id);
-      if (item) {
-        addToast({ message: `"${item.name}" lent to ${data.borrowerName}`, type: 'success' });
-      }
+            : i
+        );
+      });
     },
-    [setItems, items, addToast]
+    [setItems, addToast]
   );
 
   const handleReturn = useCallback(
     (id: string) => {
-      const item = items.find((i) => i.id === id);
-      setItems((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, borrow: null } : i))
-      );
-      if (item) {
-        addToast({ message: `"${item.name}" returned`, type: 'success' });
-      }
+      setItems((prev) => {
+        const item = prev.find((i) => i.id === id);
+        if (item) {
+          addToast({ message: `"${item.name}" returned`, type: 'success' });
+        }
+        return prev.map((i) => (i.id === id ? { ...i, borrow: null } : i));
+      });
     },
-    [setItems, items, addToast]
+    [setItems, addToast]
   );
 
   const handleDelete = useCallback(
     (id: string) => {
-      const item = items.find((i) => i.id === id);
-      setItems((prev) => prev.filter((i) => i.id !== id));
-      if (item) {
-        addToast({ message: `"${item.name}" removed`, type: 'info' });
-      }
+      setItems((prev) => {
+        const item = prev.find((i) => i.id === id);
+        if (item) {
+          addToast({ message: `"${item.name}" removed`, type: 'info' });
+        }
+        return prev.filter((i) => i.id !== id);
+      });
     },
-    [setItems, items, addToast]
+    [setItems, addToast]
   );
 
   const handleUpdate = useCallback(
@@ -209,7 +289,7 @@ function AppContent() {
             <table>
               <thead><tr><th>Item</th><th>Category</th><th>Condition</th></tr></thead>
               <tbody>
-                ${availableItems.map((item) => `<tr><td>${item.name}</td><td>${item.category}</td><td>${item.condition}</td></tr>`).join('')}
+                ${availableItems.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.category)}</td><td>${escapeHtml(item.condition)}</td></tr>`).join('')}
               </tbody>
             </table>
           ` : '<p>No items currently available.</p>'}

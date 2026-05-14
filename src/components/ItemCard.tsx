@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent } from 'react';
+import { useState, useEffect, useRef, memo, type FormEvent, type KeyboardEvent } from 'react';
 import type { ToolItem, ItemCategory, ItemCondition } from '../types';
 import { getItemStatus, CATEGORIES, CONDITIONS } from '../types';
 import { BorrowForm } from './BorrowForm';
@@ -16,7 +16,7 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemCardProps) {
+export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemCardProps) {
   const [showBorrowForm, setShowBorrowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -24,6 +24,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
   const [editCategory, setEditCategory] = useState<ItemCategory>(item.category);
   const [editCondition, setEditCondition] = useState<ItemCondition>(item.condition);
   const [editNotes, setEditNotes] = useState(item.notes);
+  const [editError, setEditError] = useState('');
   const editNameRef = useRef<HTMLInputElement>(null);
 
   // Sync edit state when item prop changes
@@ -50,13 +51,18 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
 
   const handleEditSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (!editName.trim()) {
+      setEditError('Item name is required');
+      return;
+    }
     onUpdate(item.id, {
-      name: editName,
+      name: editName.trim(),
       category: editCategory,
       condition: editCondition,
       notes: editNotes,
     });
     setIsEditing(false);
+    setEditError('');
   };
 
   const handleCancelEdit = () => {
@@ -65,6 +71,13 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
     setEditCondition(item.condition);
     setEditNotes(item.notes);
     setIsEditing(false);
+    setEditError('');
+  };
+
+  const handleEditKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
   };
 
   const handleDeleteClick = () => {
@@ -77,6 +90,18 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
 
   const handleCancelDelete = () => {
     setConfirmDelete(false);
+  };
+
+  const handleDeleteKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setConfirmDelete(false);
+    }
+  };
+
+  const handleBorrowKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowBorrowForm(false);
+    }
   };
 
   const statusBadge = () => {
@@ -106,7 +131,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
 
   if (isEditing) {
     return (
-      <div className="rounded-xl border border-brand/20 bg-surface p-5 shadow-sm ring-1 ring-brand/10 animate-slide-down">
+      <div className="rounded-xl border border-brand/20 bg-surface p-5 shadow-sm ring-1 ring-brand/10 animate-slide-down" onKeyDown={handleEditKeyDown}>
         <form onSubmit={handleEditSubmit} className="space-y-3">
           <div>
             <label htmlFor={`edit-name-${item.id}`} className="mb-1.5 block text-xs font-medium text-text-secondary">Name</label>
@@ -115,9 +140,13 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
               type="text"
               ref={editNameRef}
               value={editName}
-              onChange={(e) => setEditName(e.target.value)}
+              onChange={(e) => {
+                setEditName(e.target.value);
+                setEditError('');
+              }}
               className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-text-primary transition-all duration-200 hover:border-border-hover focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
+            {editError && <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand" role="alert"><span aria-hidden="true">⚠</span> {editError}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -218,7 +247,7 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
       )}
 
       {showBorrowForm ? (
-        <div className="mt-4 animate-slide-down">
+        <div className="mt-4 animate-slide-down" onKeyDown={handleBorrowKeyDown}>
           <BorrowForm onBorrow={handleBorrow} onCancel={() => setShowBorrowForm(false)} />
         </div>
       ) : (
@@ -262,7 +291,12 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
             Edit
           </button>
           {confirmDelete ? (
-            <div className="flex items-center gap-2 animate-fade-in">
+            <div
+              role="alertdialog"
+              aria-label="Confirm deletion"
+              className="flex items-center gap-2 animate-fade-in"
+              onKeyDown={handleDeleteKeyDown}
+            >
               <span className="text-xs text-red-600 font-medium">Delete?</span>
               <button
                 onClick={handleConfirmDelete}
@@ -296,4 +330,4 @@ export function ItemCard({ item, onBorrow, onReturn, onDelete, onUpdate }: ItemC
       )}
     </div>
   );
-}
+});
