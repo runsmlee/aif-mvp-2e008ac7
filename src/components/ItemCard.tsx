@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, memo, type FormEvent, type KeyboardEvent }
 import type { ToolItem, ItemCategory, ItemCondition } from '../types';
 import { getItemStatus, CATEGORIES, CONDITIONS } from '../types';
 import { BorrowForm } from './BorrowForm';
+import { IconCategory, IconUser, IconUsers, IconEdit, IconTrash, IconCheckSquare } from './Icon';
 
 interface ItemCardProps {
   item: ToolItem;
@@ -26,6 +27,7 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
   const [editNotes, setEditNotes] = useState(item.notes);
   const [editError, setEditError] = useState('');
   const editNameRef = useRef<HTMLInputElement>(null);
+  const confirmDeleteRef = useRef<HTMLDivElement>(null);
 
   // Sync edit state when item prop changes
   useEffect(() => {
@@ -41,6 +43,14 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
       editNameRef.current.focus();
     }
   }, [isEditing]);
+
+  // Auto-focus confirm delete dialog
+  useEffect(() => {
+    if (confirmDelete && confirmDeleteRef.current) {
+      const firstButton = confirmDeleteRef.current.querySelector('button');
+      firstButton?.focus();
+    }
+  }, [confirmDelete]);
 
   const status = getItemStatus(item);
 
@@ -144,9 +154,11 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
                 setEditName(e.target.value);
                 setEditError('');
               }}
+              aria-invalid={editError ? 'true' : undefined}
+              aria-describedby={editError ? `edit-error-${item.id}` : undefined}
               className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-text-primary transition-all duration-200 hover:border-border-hover focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
-            {editError && <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand" role="alert"><span aria-hidden="true">⚠</span> {editError}</p>}
+            {editError && <p id={`edit-error-${item.id}`} className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand" role="alert"><span aria-hidden="true">⚠</span> {editError}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -213,9 +225,7 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
           <h3 className="truncate text-sm font-semibold text-text-primary">{item.name}</h3>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center text-xs text-text-secondary">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 text-text-tertiary" aria-hidden="true">
-                <path d="M20 7h-9M3 7h2M6 7V5a2 2 0 0 1 2-2h1V3m0 4v4m0 0H5a2 2 0 0 0-2 2v3h7m0-5v5m0 0h2m-2 0v1a2 2 0 0 1-2 2H5v1m14-3a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" />
-              </svg>
+              <IconCategory size={12} className="mr-1 text-text-tertiary" />
               {item.category}
             </span>
             <span className="text-text-tertiary" aria-hidden="true">·</span>
@@ -228,10 +238,7 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
 
       {item.borrow && (
         <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-surface-tertiary px-3 py-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary" aria-hidden="true">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
+          <IconUser size={14} className="text-text-tertiary" />
           <span className="text-xs text-text-secondary">
             Lent to <span className="font-medium">{item.borrow.borrowerName}</span>
           </span>
@@ -258,11 +265,7 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
               className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-amber-600 hover:shadow-sm active:scale-[0.97]"
               aria-label={`Borrow ${item.name}`}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+              <IconUsers size={14} />
               Lend Out
             </button>
           )}
@@ -272,10 +275,7 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
               className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-sm active:scale-[0.97]"
               aria-label={`Return ${item.name}`}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="9 11 12 14 22 4" />
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-              </svg>
+              <IconCheckSquare size={14} />
               Return
             </button>
           )}
@@ -284,14 +284,12 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
             className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2.5 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.97]"
             aria-label={`Edit ${item.name}`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
+            <IconEdit size={14} />
             Edit
           </button>
           {confirmDelete ? (
             <div
+              ref={confirmDeleteRef}
               role="alertdialog"
               aria-label="Confirm deletion"
               className="flex items-center gap-2 animate-fade-in"
@@ -319,10 +317,7 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
               className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-600 transition-all duration-200 hover:bg-red-100 hover:border-red-300 active:scale-[0.97]"
               aria-label={`Delete ${item.name}`}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-              </svg>
+              <IconTrash size={14} />
               Delete
             </button>
           )}

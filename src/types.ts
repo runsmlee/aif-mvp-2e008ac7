@@ -7,7 +7,7 @@ export type ItemStatus = 'available' | 'lent' | 'overdue';
 export interface BorrowRecord {
   borrowerName: string;
   borrowDate: string;
-  returnDate: string;
+  returnDate: string | null;
 }
 
 export interface ToolItem {

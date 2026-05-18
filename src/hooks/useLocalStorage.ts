@@ -6,6 +6,7 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
       const item = localStorage.getItem(key);
       return item ? (JSON.parse(item) as T) : initialValue;
     } catch {
+      console.warn(`[ToolShelf] Failed to read localStorage key "${key}", using default value.`);
       return initialValue;
     }
   });
@@ -13,8 +14,8 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(storedValue));
-    } catch {
-      // Silently fail if localStorage is full or unavailable
+    } catch (err) {
+      console.warn(`[ToolShelf] Failed to save to localStorage key "${key}". Data may not persist.`, err);
     }
   }, [key, storedValue]);
 

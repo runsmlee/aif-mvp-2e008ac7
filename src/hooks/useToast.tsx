@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
+import { IconCheck, IconErrorCircle, IconAlertCircle, IconX } from '../components/Icon';
 
 export interface Toast {
   id: string;
@@ -22,10 +23,11 @@ export function useToast(): ToastContextValue {
   return context;
 }
 
-let toastCounter = 0;
+const MAX_TOASTS = 5;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const counterRef = useRef(0);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -33,8 +35,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const addToast = useCallback(
     (toast: Omit<Toast, 'id'>) => {
-      const id = `toast-${++toastCounter}`;
-      setToasts((prev) => [...prev, { ...toast, id }]);
+      const id = `toast-${++counterRef.current}`;
+      setToasts((prev) => {
+        const next = [...prev, { ...toast, id }];
+        // Cap visible toasts to prevent stacking
+        return next.slice(-MAX_TOASTS);
+      });
     },
     []
   );
@@ -70,21 +76,9 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         : 'bg-blue-50 border-blue-200 text-blue-800';
 
   const icon =
-    toast.type === 'success' ? (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    ) : toast.type === 'error' ? (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M15 9l-6 6M9 9l6 6" />
-      </svg>
-    ) : (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 16v-4M12 8h.01" />
-      </svg>
-    );
+    toast.type === 'success' ? <IconCheck size={16} /> :
+    toast.type === 'error' ? <IconErrorCircle size={16} /> :
+    <IconAlertCircle size={16} />;
 
   return (
     <div
@@ -98,9 +92,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         aria-label="Dismiss notification"
         className="ml-2 rounded p-0.5 opacity-60 transition-opacity hover:opacity-100"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
+        <IconX size={14} />
       </button>
     </div>
   );

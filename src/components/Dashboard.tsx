@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { ToolItem, StatusFilter, ItemCategory } from '../types';
 import { getItemStatus, CATEGORIES } from '../types';
+import { IconX } from './Icon';
 
 interface DashboardProps {
   items: ToolItem[];
@@ -33,8 +34,8 @@ export function Dashboard({ items, onFilter, onCategoryFilter, activeFilter, act
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2" role="status" aria-label="Item dashboard">
-        <span className="mr-1 text-sm font-semibold text-text-primary">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Item status filters">
+        <span className="mr-1 text-sm font-semibold text-text-primary" role="status" aria-live="polite">
           {total} {total === 1 ? 'item' : 'items'}
         </span>
 
@@ -85,9 +86,7 @@ export function Dashboard({ items, onFilter, onCategoryFilter, activeFilter, act
             onClick={() => onFilter('all')}
             className="inline-flex h-8 items-center text-xs font-medium text-text-tertiary transition-colors duration-200 hover:text-text-secondary"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <IconX size={14} className="mr-1" />
             Clear
           </button>
         )}
@@ -116,9 +115,7 @@ export function Dashboard({ items, onFilter, onCategoryFilter, activeFilter, act
               onClick={() => onCategoryFilter('all')}
               className="inline-flex h-7 items-center text-xs font-medium text-text-tertiary transition-colors duration-200 hover:text-text-secondary"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
+              <IconX size={12} className="mr-1" />
               All
             </button>
           )}

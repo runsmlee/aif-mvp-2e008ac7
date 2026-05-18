@@ -46,6 +46,8 @@ export function BorrowForm({ onBorrow, onCancel }: BorrowFormProps) {
           placeholder="Who is borrowing?"
           aria-label="Borrower name"
           aria-required="true"
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={error ? 'borrow-error' : undefined}
         />
       </div>
       <div>
@@ -61,7 +63,7 @@ export function BorrowForm({ onBorrow, onCancel }: BorrowFormProps) {
           aria-label="Return date"
         />
       </div>
-      {error && <p className="flex items-center gap-1 text-xs font-medium text-brand" role="alert"><span aria-hidden="true">⚠</span> {error}</p>}
+      {error && <p id="borrow-error" className="flex items-center gap-1 text-xs font-medium text-brand" role="alert"><span aria-hidden="true">⚠</span> {error}</p>}
       <div className="flex gap-2 pt-0.5">
         <button
           type="submit"

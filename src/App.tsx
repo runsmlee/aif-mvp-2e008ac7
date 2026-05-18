@@ -6,10 +6,13 @@ import { SearchBar } from './components/SearchBar';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
 import { DataManagement } from './components/DataManagement';
+import { IconPlus, IconPrint, IconX, IconLock } from './components/Icon';
 import type { ToolItem, StatusFilter, ItemCategory } from './types';
 import { getItemStatus } from './types';
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'status';
+
+const STATUS_ORDER: Record<string, number> = { overdue: 0, lent: 1, available: 2 };
 
 function escapeHtml(str: string): string {
   return str
@@ -158,8 +161,7 @@ function AppContent() {
         case 'oldest':
           return a.id.localeCompare(b.id);
         case 'status': {
-          const statusOrder: Record<string, number> = { overdue: 0, lent: 1, available: 2 };
-          return statusOrder[getItemStatus(a)] - statusOrder[getItemStatus(b)];
+          return STATUS_ORDER[getItemStatus(a)] - STATUS_ORDER[getItemStatus(b)];
         }
         default:
           return 0;
@@ -190,7 +192,7 @@ function AppContent() {
                 borrow: {
                   borrowerName: data.borrowerName,
                   borrowDate: new Date().toISOString().split('T')[0],
-                  returnDate: data.returnDate,
+                  returnDate: data.returnDate || null,
                 },
               }
             : i
@@ -373,9 +375,7 @@ function AppContent() {
               className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand/20 transition-all duration-200 hover:bg-brand-dark hover:shadow-md hover:shadow-brand/25 active:scale-[0.98]"
               aria-label="Add new item"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M8 3v10M3 8h10" />
-              </svg>
+              <IconPlus size={16} />
               Add Item
             </button>
           )}
@@ -384,10 +384,7 @@ function AppContent() {
             className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
             aria-label="Print available items"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-              <rect x="6" y="14" width="12" height="8" />
-            </svg>
+            <IconPrint size={15} />
             Print
           </button>
         </div>
@@ -418,9 +415,7 @@ function AppContent() {
                 onClick={() => setShowForm(true)}
                 className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand/20 transition-all duration-200 hover:bg-brand-dark hover:shadow-md hover:shadow-brand/25 active:scale-[0.98]"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M8 3v10M3 8h10" />
-                </svg>
+                <IconPlus size={16} />
                 Add Your First Tool
               </button>
             )}
@@ -435,9 +430,7 @@ function AppContent() {
                     }}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
+                    <IconX size={12} />
                     Clear all filters
                   </button>
                 )}
@@ -467,10 +460,7 @@ function AppContent() {
             ToolShelf — Neighborhood Tool Sharing
           </p>
           <p className="flex items-center gap-1.5 text-xs text-text-tertiary">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-success">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
+            <IconLock size={12} className="text-success" />
             Your data stays in your browser. Nothing leaves unless you export it.
           </p>
         </div>

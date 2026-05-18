@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
-import type { ToolItem, ItemCategory, ItemCondition } from '../types';
+import type { ToolItem } from '../types';
+import { CATEGORIES, CONDITIONS } from '../types';
+import { IconDownload, IconUpload } from './Icon';
 
-const VALID_CATEGORIES: Set<string> = new Set(['Power Tools', 'Hand Tools', 'Garden', 'Household']);
-const VALID_CONDITIONS: Set<string> = new Set(['Excellent', 'Good', 'Fair', 'Poor']);
+const VALID_CATEGORIES: Set<string> = new Set(CATEGORIES);
+const VALID_CONDITIONS: Set<string> = new Set(CONDITIONS);
 
 function isValidItem(value: unknown): value is ToolItem {
   if (typeof value !== 'object' || value === null) return false;
@@ -79,11 +81,7 @@ export function DataManagement({ items, onImport, onExport }: DataManagementProp
         className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2.5 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.97]"
         aria-label="Export items as JSON"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
+        <IconDownload size={14} />
         Export
       </button>
 
@@ -101,11 +99,7 @@ export function DataManagement({ items, onImport, onExport }: DataManagementProp
         className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2.5 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.97]"
         aria-label="Import items from JSON file"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
+        <IconUpload size={14} />
         Import
       </button>
 

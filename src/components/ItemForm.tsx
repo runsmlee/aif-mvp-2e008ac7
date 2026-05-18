@@ -62,8 +62,10 @@ export function ItemForm({ onAdd, onCancel }: ItemFormProps) {
           placeholder="e.g., Power Drill"
           aria-label="Item name"
           aria-required="true"
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={error ? 'item-name-error' : undefined}
         />
-        {error && <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand" role="alert"><span aria-hidden="true">⚠</span> {error}</p>}
+        {error && <p id="item-name-error" className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand" role="alert"><span aria-hidden="true">⚠</span> {error}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
