@@ -6,10 +6,12 @@ beforeEach(() => {
 });
 
 describe('App', () => {
-  it('renders the ToolShelf header and empty state message when no items exist', () => {
+  it('renders the ToolShelf header and pre-populated example items on first load', () => {
     render(<App />);
     expect(screen.getByText('ToolShelf')).toBeInTheDocument();
-    expect(screen.getByText(/No items yet/i)).toBeInTheDocument();
+    expect(screen.getByText('Power Drill')).toBeInTheDocument();
+    expect(screen.getByText('Ladder')).toBeInTheDocument();
+    expect(screen.getByText('Circular Saw')).toBeInTheDocument();
   });
 
   it('renders the item list when items are present in storage', () => {
@@ -88,5 +90,12 @@ describe('App', () => {
     const itemElements = screen.getAllByRole('article');
     expect(itemElements[0]).toHaveTextContent('Alpha');
     expect(itemElements[1]).toHaveTextContent('Zebra');
+  });
+
+  it('shows empty state when all items are deleted', () => {
+    // Set empty array in storage to simulate all items deleted
+    localStorage.setItem('toolshelf-items', JSON.stringify([]));
+    render(<App />);
+    expect(screen.getByText(/no items/i)).toBeInTheDocument();
   });
 });

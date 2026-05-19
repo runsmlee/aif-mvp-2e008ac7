@@ -6,7 +6,7 @@ import { SearchBar } from './components/SearchBar';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
 import { DataManagement } from './components/DataManagement';
-import { IconPlus, IconPrint, IconX, IconLock } from './components/Icon';
+import { IconPlus, IconPrint, IconX } from './components/Icon';
 import type { ToolItem, StatusFilter, ItemCategory } from './types';
 import { getItemStatus } from './types';
 
@@ -95,6 +95,37 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   }
 }
 
+const EXAMPLE_ITEMS: ToolItem[] = [
+  {
+    id: 'example-drill',
+    name: 'Power Drill',
+    category: 'Power Tools',
+    condition: 'Good',
+    notes: 'Cordless, with charger',
+    borrow: {
+      borrowerName: 'Mike',
+      borrowDate: '2026-05-10',
+      returnDate: '2026-05-24',
+    },
+  },
+  {
+    id: 'example-ladder',
+    name: 'Ladder',
+    category: 'Household',
+    condition: 'Good',
+    notes: '6-foot stepladder',
+    borrow: null,
+  },
+  {
+    id: 'example-saw',
+    name: 'Circular Saw',
+    category: 'Power Tools',
+    condition: 'Excellent',
+    notes: '',
+    borrow: null,
+  },
+];
+
 export function App() {
   return (
     <ErrorBoundary>
@@ -106,7 +137,7 @@ export function App() {
 }
 
 function AppContent() {
-  const [items, setItems] = useLocalStorage<ToolItem[]>('toolshelf-items', []);
+  const [items, setItems] = useLocalStorage<ToolItem[]>('toolshelf-items', EXAMPLE_ITEMS);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<ItemCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -295,7 +326,7 @@ function AppContent() {
               </tbody>
             </table>
           ` : '<p>No items currently available.</p>'}
-          <div class="footer">ToolShelf — Neighborhood Tool Sharing</div>
+          <div class="footer">ToolShelf</div>
           <script>window.onload = function() { window.print(); }</script>
         </body>
       </html>
@@ -320,12 +351,9 @@ function AppContent() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white text-base shadow-sm shadow-brand/25">
               🔧
             </div>
-            <div>
-              <h1 className="text-lg font-bold leading-tight tracking-tight text-text-primary">
-                ToolShelf
-              </h1>
-              <p className="text-xs leading-tight text-text-tertiary">Share tools with your neighbors</p>
-            </div>
+            <h1 className="text-lg font-bold leading-tight tracking-tight text-text-primary">
+              ToolShelf
+            </h1>
           </div>
           <DataManagement items={items} onImport={handleImport} onExport={handleExport} />
         </div>
@@ -403,22 +431,13 @@ function AppContent() {
               {items.length === 0 ? '🧰' : '🔍'}
             </div>
             <p className="text-base font-medium text-text-secondary">
-              {items.length === 0 ? 'No items yet' : `No items match your filter`}
+              {items.length === 0 ? 'No items' : 'No items match your filter'}
             </p>
             <p className="mt-1 text-sm text-text-tertiary">
               {items.length === 0
-                ? 'Add your first tool to get started sharing with neighbors.'
+                ? 'Click "Add Item" above to add a tool.'
                 : `You have ${items.length} item${items.length === 1 ? '' : 's'} total. Try adjusting your search or filter.`}
             </p>
-            {items.length === 0 && !showForm && (
-              <button
-                onClick={() => setShowForm(true)}
-                className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand/20 transition-all duration-200 hover:bg-brand-dark hover:shadow-md hover:shadow-brand/25 active:scale-[0.98]"
-              >
-                <IconPlus size={16} />
-                Add Your First Tool
-              </button>
-            )}
             {items.length > 0 && filteredItems.length === 0 && (
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                 {(statusFilter !== 'all' || categoryFilter !== 'all' || searchQuery) && (
@@ -452,19 +471,6 @@ function AppContent() {
           </div>
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="mt-auto border-t border-border bg-surface px-4 py-5 sm:px-6">
-        <div className="mx-auto max-w-2xl flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
-          <p className="text-xs text-text-tertiary">
-            ToolShelf — Neighborhood Tool Sharing
-          </p>
-          <p className="flex items-center gap-1.5 text-xs text-text-tertiary">
-            <IconLock size={12} className="text-success" />
-            Your data stays in your browser. Nothing leaves unless you export it.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
