@@ -6,22 +6,13 @@ import { SearchBar } from './components/SearchBar';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
 import { DataManagement } from './components/DataManagement';
-import { IconPlus, IconPrint, IconX } from './components/Icon';
+import { IconPlus, IconX } from './components/Icon';
 import type { ToolItem, StatusFilter, ItemCategory } from './types';
 import { getItemStatus } from './types';
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'status';
 
 const STATUS_ORDER: Record<string, number> = { overdue: 0, lent: 1, available: 2 };
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
 
 function isTypingInInput(e: KeyboardEvent): boolean {
   const target = e.target as HTMLElement;
@@ -98,10 +89,10 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 const EXAMPLE_ITEMS: ToolItem[] = [
   {
     id: 'example-drill',
-    name: 'Power Drill',
+    name: 'Cordless Drill',
     category: 'Power Tools',
     condition: 'Good',
-    notes: 'Cordless, with charger',
+    notes: 'Includes charger and bit set',
     borrow: {
       borrowerName: 'Mike',
       borrowDate: '2026-05-10',
@@ -110,18 +101,18 @@ const EXAMPLE_ITEMS: ToolItem[] = [
   },
   {
     id: 'example-ladder',
-    name: 'Ladder',
+    name: '8ft Ladder',
     category: 'Household',
     condition: 'Good',
-    notes: '6-foot stepladder',
+    notes: 'Fiberglass stepladder',
     borrow: null,
   },
   {
-    id: 'example-saw',
-    name: 'Circular Saw',
-    category: 'Power Tools',
+    id: 'example-sockets',
+    name: 'Socket Set',
+    category: 'Hand Tools',
     condition: 'Excellent',
-    notes: '',
+    notes: 'Metric and SAE, 42-piece',
     borrow: null,
   },
 ];
@@ -295,45 +286,6 @@ function AppContent() {
     [setItems, addToast]
   );
 
-  const handlePrint = useCallback(() => {
-    const availableItems = items.filter((item) => getItemStatus(item) === 'available');
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>ToolShelf — Available Items</title>
-          <style>
-            body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; }
-            h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-            p.subtitle { color: #666; margin-bottom: 1.5rem; font-size: 0.875rem; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { text-align: left; padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.875rem; }
-            th { font-weight: 600; color: #374151; }
-            .footer { margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #EF4444; text-align: center; color: #666; font-size: 0.75rem; }
-            @media print { body { padding: 1rem; } }
-          </style>
-        </head>
-        <body>
-          <h1>🔧 ToolShelf — Available Items</h1>
-          <p class="subtitle">Generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-          ${availableItems.length > 0 ? `
-            <table>
-              <thead><tr><th>Item</th><th>Category</th><th>Condition</th></tr></thead>
-              <tbody>
-                ${availableItems.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.category)}</td><td>${escapeHtml(item.condition)}</td></tr>`).join('')}
-              </tbody>
-            </table>
-          ` : '<p>No items currently available.</p>'}
-          <div class="footer">ToolShelf</div>
-          <script>window.onload = function() { window.print(); }</script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  }, [items]);
-
   return (
     <div className="flex min-h-screen flex-col bg-surface-secondary">
       {/* Skip to content link for keyboard users */}
@@ -407,14 +359,6 @@ function AppContent() {
               Add Item
             </button>
           )}
-          <button
-            onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
-            aria-label="Print available items"
-          >
-            <IconPrint size={15} />
-            Print
-          </button>
         </div>
 
         {/* Add Item Form */}
