@@ -58,15 +58,6 @@ export function IconUpload({ size, className }: IconProps) {
   );
 }
 
-export function IconPrint({ size, className }: IconProps) {
-  return (
-    <svg {...props(size, className)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-      <rect x="6" y="14" width="12" height="8" />
-    </svg>
-  );
-}
-
 export function IconUser({ size, className }: IconProps) {
   return (
     <svg {...props(size, className)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -135,15 +126,6 @@ export function IconErrorCircle({ size, className }: IconProps) {
     <svg {...props(size, className)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
       <circle cx="12" cy="12" r="10" />
       <path d="M15 9l-6 6M9 9l6 6" />
-    </svg>
-  );
-}
-
-export function IconLock({ size, className }: IconProps) {
-  return (
-    <svg {...props(size, className)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   );
 }

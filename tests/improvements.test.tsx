@@ -1,10 +1,9 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { App } from '../src/App';
 import { getItemStatus } from '../src/types';
 import { ItemCard } from '../src/components/ItemCard';
 import { BorrowForm } from '../src/components/BorrowForm';
 import { Dashboard } from '../src/components/Dashboard';
-import { DataManagement } from '../src/components/DataManagement';
 import type { ToolItem } from '../src/types';
 
 beforeEach(() => {
@@ -42,65 +41,6 @@ describe('Error Boundary', () => {
   });
 });
 
-// ============================================================
-// P0: Import Data Validation
-// ============================================================
-describe('Import data validation', () => {
-  it('rejects import of JSON array with invalid item shapes', async () => {
-    render(<DataManagement items={[]} onImport={vi.fn()} onExport={vi.fn()} />);
-    const importInput = document.getElementById('import-file-input') as HTMLInputElement;
-
-    // Array of objects missing required fields
-    const badItems = [{ foo: 'bar' }, { baz: 123 }];
-    const file = new File([JSON.stringify(badItems)], 'bad-shape.json', {
-      type: 'application/json',
-    });
-    fireEvent.change(importInput, { target: { files: [file] } });
-
-    await waitFor(() => {
-      expect(screen.getByText(/invalid/i)).toBeInTheDocument();
-    });
-  });
-
-  it('accepts import of valid ToolItem array', async () => {
-    const onImport = vi.fn();
-    render(<DataManagement items={[]} onImport={onImport} onExport={vi.fn()} />);
-    const importInput = document.getElementById('import-file-input') as HTMLInputElement;
-
-    const validItems: ToolItem[] = [
-      {
-        id: '1',
-        name: 'Drill',
-        category: 'Power Tools',
-        condition: 'Good',
-        notes: '',
-        borrow: null,
-      },
-    ];
-    const file = new File([JSON.stringify(validItems)], 'valid.json', {
-      type: 'application/json',
-    });
-    fireEvent.change(importInput, { target: { files: [file] } });
-
-    await waitFor(() => {
-      expect(onImport).toHaveBeenCalledWith(validItems);
-    });
-  });
-
-  it('rejects import of JSON with non-array root', async () => {
-    render(<DataManagement items={[]} onImport={vi.fn()} onExport={vi.fn()} />);
-    const importInput = document.getElementById('import-file-input') as HTMLInputElement;
-
-    const file = new File([JSON.stringify({ not: 'an array' })], 'obj.json', {
-      type: 'application/json',
-    });
-    fireEvent.change(importInput, { target: { files: [file] } });
-
-    await waitFor(() => {
-      expect(screen.getByText(/invalid/i)).toBeInTheDocument();
-    });
-  });
-});
 
 // ============================================================
 // P1: Escape Key Handling

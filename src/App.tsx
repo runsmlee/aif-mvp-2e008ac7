@@ -261,27 +261,26 @@ function AppContent() {
   );
 
   const handleExport = useCallback(
-    (data: ToolItem[]) => {
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: 'application/json',
-      });
+    (exportItems: ToolItem[]) => {
+      const json = JSON.stringify(exportItems, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `toolshelf-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'toolshelf-export.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      addToast({ message: `${data.length} items exported`, type: 'success' });
+      addToast({ message: `Exported ${exportItems.length} item${exportItems.length === 1 ? '' : 's'}`, type: 'success' });
     },
     [addToast]
   );
 
   const handleImport = useCallback(
-    (data: ToolItem[]) => {
-      setItems(data);
-      addToast({ message: `${data.length} items imported`, type: 'success' });
+    (importedItems: ToolItem[]) => {
+      setItems(importedItems);
+      addToast({ message: `Imported ${importedItems.length} item${importedItems.length === 1 ? '' : 's'}`, type: 'success' });
     },
     [setItems, addToast]
   );
@@ -298,7 +297,7 @@ function AppContent() {
 
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-surface/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-2xl items-center px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white text-base shadow-sm shadow-brand/25">
               🔧
@@ -307,7 +306,7 @@ function AppContent() {
               ToolShelf
             </h1>
           </div>
-          <DataManagement items={items} onImport={handleImport} onExport={handleExport} />
+
         </div>
       </header>
 
@@ -348,7 +347,7 @@ function AppContent() {
         </div>
 
         {/* Actions */}
-        <div className="mb-5 flex flex-wrap gap-2">
+        <div className="mb-5 flex flex-wrap items-center gap-2">
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
@@ -359,6 +358,7 @@ function AppContent() {
               Add Item
             </button>
           )}
+          <DataManagement items={items} onExport={handleExport} onImport={handleImport} />
         </div>
 
         {/* Add Item Form */}
