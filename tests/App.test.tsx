@@ -9,8 +9,8 @@ describe('App', () => {
   it('renders the ToolShelf header and pre-populated example items on first load', () => {
     render(<App />);
     expect(screen.getByText('ToolShelf')).toBeInTheDocument();
-    expect(screen.getByText('Cordless Drill')).toBeInTheDocument();
-    expect(screen.getByText('8ft Ladder')).toBeInTheDocument();
+    expect(screen.getByText('Drill')).toBeInTheDocument();
+    expect(screen.getByText('Ladder')).toBeInTheDocument();
     expect(screen.getByText('Socket Set')).toBeInTheDocument();
   });
 
@@ -59,11 +59,6 @@ describe('App', () => {
     expect(screen.getByText('1 Lent')).toBeInTheDocument();
   });
 
-  it('renders sort control', () => {
-    render(<App />);
-    expect(screen.getByLabelText(/sort items/i)).toBeInTheDocument();
-  });
-
   it('shows success toast when an item is added', () => {
     render(<App />);
     // Click add item button
@@ -75,21 +70,6 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: /^add item$/i }));
     // Should show toast
     expect(screen.getByText(/added/i)).toBeInTheDocument();
-  });
-
-  it('sorts items alphabetically when sort is changed', () => {
-    const items = [
-      { id: '1', name: 'Zebra', category: 'Hand Tools', condition: 'Good', notes: '', borrow: null },
-      { id: '2', name: 'Alpha', category: 'Power Tools', condition: 'Good', notes: '', borrow: null },
-    ];
-    localStorage.setItem('toolshelf-items', JSON.stringify(items));
-    render(<App />);
-    // Change sort to alphabetical
-    fireEvent.change(screen.getByLabelText(/sort items/i), { target: { value: 'name-asc' } });
-    // Alpha should come before Zebra
-    const itemElements = screen.getAllByRole('article');
-    expect(itemElements[0]).toHaveTextContent('Alpha');
-    expect(itemElements[1]).toHaveTextContent('Zebra');
   });
 
   it('shows empty state when all items are deleted', () => {

@@ -10,10 +10,6 @@ import { IconPlus, IconX } from './components/Icon';
 import type { ToolItem, StatusFilter, ItemCategory } from './types';
 import { getItemStatus } from './types';
 
-type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc' | 'status';
-
-const STATUS_ORDER: Record<string, number> = { overdue: 0, lent: 1, available: 2 };
-
 function isTypingInInput(e: KeyboardEvent): boolean {
   const target = e.target as HTMLElement;
   return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable;
@@ -89,23 +85,23 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 const EXAMPLE_ITEMS: ToolItem[] = [
   {
     id: 'example-drill',
-    name: 'Cordless Drill',
+    name: 'Drill',
     category: 'Power Tools',
     condition: 'Good',
-    notes: 'Includes charger and bit set',
+    notes: 'Cordless, includes charger and bit set',
+    borrow: null,
+  },
+  {
+    id: 'example-ladder',
+    name: 'Ladder',
+    category: 'Household',
+    condition: 'Good',
+    notes: '8ft fiberglass stepladder',
     borrow: {
       borrowerName: 'Mike',
       borrowDate: '2026-05-10',
       returnDate: '2026-05-24',
     },
-  },
-  {
-    id: 'example-ladder',
-    name: '8ft Ladder',
-    category: 'Household',
-    condition: 'Good',
-    notes: 'Fiberglass stepladder',
-    borrow: null,
   },
   {
     id: 'example-sockets',
@@ -133,7 +129,6 @@ function AppContent() {
   const [categoryFilter, setCategoryFilter] = useState<ItemCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>('newest');
   const { addToast } = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -150,7 +145,7 @@ function AppContent() {
   }, []);
 
   const filteredItems = useMemo(() => {
-    const filtered = items.filter((item) => {
+    return items.filter((item) => {
       // Status filter
       if (statusFilter !== 'all' && getItemStatus(item) !== statusFilter) {
         return false;
@@ -170,26 +165,7 @@ function AppContent() {
       }
       return true;
     });
-
-    // Sort items
-    return filtered.sort((a, b) => {
-      switch (sortOption) {
-        case 'name-asc':
-          return a.name.localeCompare(b.name);
-        case 'name-desc':
-          return b.name.localeCompare(a.name);
-        case 'newest':
-          return b.id.localeCompare(a.id);
-        case 'oldest':
-          return a.id.localeCompare(b.id);
-        case 'status': {
-          return STATUS_ORDER[getItemStatus(a)] - STATUS_ORDER[getItemStatus(b)];
-        }
-        default:
-          return 0;
-      }
-    });
-  }, [items, statusFilter, categoryFilter, searchQuery, sortOption]);
+  }, [items, statusFilter, categoryFilter, searchQuery]);
 
   const handleAddItem = useCallback(
     (item: ToolItem) => {
@@ -323,26 +299,8 @@ function AppContent() {
               activeCategory={categoryFilter}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-full sm:w-52">
-              <SearchBar ref={searchInputRef} onSearch={setSearchQuery} value={searchQuery} />
-            </div>
-            <div className="w-full sm:w-32">
-              <label htmlFor="sort-select" className="sr-only">Sort items</label>
-              <select
-                id="sort-select"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as SortOption)}
-                aria-label="Sort items"
-                className="w-full rounded-lg border border-border bg-surface py-2.5 pl-3 pr-8 text-xs font-medium text-text-secondary transition-all duration-200 hover:border-border-hover focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_8px_center] bg-no-repeat"
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="name-asc">Name A–Z</option>
-                <option value="name-desc">Name Z–A</option>
-                <option value="status">By status</option>
-              </select>
-            </div>
+          <div className="w-full sm:w-56">
+            <SearchBar ref={searchInputRef} onSearch={setSearchQuery} value={searchQuery} />
           </div>
         </div>
 
