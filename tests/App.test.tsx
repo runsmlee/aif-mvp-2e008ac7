@@ -9,8 +9,8 @@ describe('App', () => {
   it('renders the ToolShelf header and pre-populated example items on first load', () => {
     render(<App />);
     expect(screen.getByText('ToolShelf')).toBeInTheDocument();
-    expect(screen.getByText('Drill')).toBeInTheDocument();
-    expect(screen.getByText('Ladder')).toBeInTheDocument();
+    expect(screen.getByText('Cordless Drill')).toBeInTheDocument();
+    expect(screen.getByText('6ft Step Ladder')).toBeInTheDocument();
     expect(screen.getByText('Socket Set')).toBeInTheDocument();
   });
 

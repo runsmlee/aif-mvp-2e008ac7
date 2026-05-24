@@ -6,6 +6,7 @@ import { SearchBar } from './components/SearchBar';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
 import { DataManagement } from './components/DataManagement';
+
 import { IconPlus, IconX } from './components/Icon';
 import type { ToolItem, StatusFilter, ItemCategory } from './types';
 import { getItemStatus } from './types';
@@ -85,18 +86,18 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 const EXAMPLE_ITEMS: ToolItem[] = [
   {
     id: 'example-drill',
-    name: 'Drill',
+    name: 'Cordless Drill',
     category: 'Power Tools',
     condition: 'Good',
-    notes: 'Cordless, includes charger and bit set',
+    notes: 'Includes charger and bit set',
     borrow: null,
   },
   {
     id: 'example-ladder',
-    name: 'Ladder',
+    name: '6ft Step Ladder',
     category: 'Household',
     condition: 'Good',
-    notes: '8ft fiberglass stepladder',
+    notes: 'Fiberglass, rated for 250lbs',
     borrow: {
       borrowerName: 'Mike',
       borrowDate: '2026-05-10',
@@ -241,14 +242,14 @@ function AppContent() {
       const json = JSON.stringify(exportItems, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'toolshelf-export.json';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'toolshelf-export.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast({ message: `Exported ${exportItems.length} item${exportItems.length === 1 ? '' : 's'}`, type: 'success' });
+      addToast({ message: `${exportItems.length} item${exportItems.length === 1 ? '' : 's'} exported`, type: 'success' });
     },
     [addToast]
   );
@@ -256,7 +257,7 @@ function AppContent() {
   const handleImport = useCallback(
     (importedItems: ToolItem[]) => {
       setItems(importedItems);
-      addToast({ message: `Imported ${importedItems.length} item${importedItems.length === 1 ? '' : 's'}`, type: 'success' });
+      addToast({ message: `${importedItems.length} item${importedItems.length === 1 ? '' : 's'} imported`, type: 'success' });
     },
     [setItems, addToast]
   );
