@@ -8,7 +8,7 @@ import { ItemCard } from './components/ItemCard';
 import { DataManagement } from './components/DataManagement';
 
 import { IconPlus, IconX } from './components/Icon';
-import type { ToolItem, StatusFilter, ItemCategory } from './types';
+import type { ToolItem, StatusFilter } from './types';
 import { getItemStatus } from './types';
 
 function isTypingInInput(e: KeyboardEvent): boolean {
@@ -127,7 +127,6 @@ export function App() {
 function AppContent() {
   const [items, setItems] = useLocalStorage<ToolItem[]>('toolshelf-items', EXAMPLE_ITEMS);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<ItemCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const { addToast } = useToast();
@@ -151,10 +150,6 @@ function AppContent() {
       if (statusFilter !== 'all' && getItemStatus(item) !== statusFilter) {
         return false;
       }
-      // Category filter
-      if (categoryFilter !== 'all' && item.category !== categoryFilter) {
-        return false;
-      }
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -166,7 +161,7 @@ function AppContent() {
       }
       return true;
     });
-  }, [items, statusFilter, categoryFilter, searchQuery]);
+  }, [items, statusFilter, searchQuery]);
 
   const handleAddItem = useCallback(
     (item: ToolItem) => {
@@ -295,9 +290,7 @@ function AppContent() {
             <Dashboard
               items={items}
               onFilter={setStatusFilter}
-              onCategoryFilter={setCategoryFilter}
               activeFilter={statusFilter}
-              activeCategory={categoryFilter}
             />
           </div>
           <div className="w-full sm:w-56">
@@ -343,11 +336,10 @@ function AppContent() {
             </p>
             {items.length > 0 && filteredItems.length === 0 && (
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                {(statusFilter !== 'all' || categoryFilter !== 'all' || searchQuery) && (
+                {(statusFilter !== 'all' || searchQuery) && (
                   <button
                     onClick={() => {
                       setStatusFilter('all');
-                      setCategoryFilter('all');
                       setSearchQuery('');
                     }}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"

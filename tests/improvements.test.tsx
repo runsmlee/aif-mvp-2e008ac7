@@ -6,6 +6,8 @@ import { BorrowForm } from '../src/components/BorrowForm';
 import { Dashboard } from '../src/components/Dashboard';
 import type { ToolItem } from '../src/types';
 
+declare const vi: ReturnType<typeof import('vitest').vi>;
+
 beforeEach(() => {
   localStorage.clear();
 });
@@ -156,7 +158,7 @@ describe('Dashboard accessibility', () => {
   ];
 
   it('status filter buttons have aria-pressed attribute', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} activeFilter="all" />);
 
     const availableBtn = screen.getByLabelText(/available items/i);
     const lentBtn = screen.getByLabelText(/lent items/i);
@@ -168,24 +170,10 @@ describe('Dashboard accessibility', () => {
   });
 
   it('active status filter has aria-pressed="true"', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="available" activeCategory="all" />);
+    render(<Dashboard items={mockItems} onFilter={vi.fn()} activeFilter="available" />);
 
     const availableBtn = screen.getByLabelText(/available items/i);
     expect(availableBtn).toHaveAttribute('aria-pressed', 'true');
-  });
-
-  it('category filter buttons have aria-pressed attribute', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="all" />);
-
-    const powerToolsBtn = screen.getByText('Power Tools');
-    expect(powerToolsBtn).toHaveAttribute('aria-pressed', 'false');
-  });
-
-  it('active category filter has aria-pressed="true"', () => {
-    render(<Dashboard items={mockItems} onFilter={vi.fn()} onCategoryFilter={vi.fn()} activeFilter="all" activeCategory="Power Tools" />);
-
-    const powerToolsBtn = screen.getByText('Power Tools');
-    expect(powerToolsBtn).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
