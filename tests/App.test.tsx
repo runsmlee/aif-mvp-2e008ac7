@@ -10,7 +10,7 @@ describe('App', () => {
     render(<App />);
     expect(screen.getByText('ToolShelf')).toBeInTheDocument();
     expect(screen.getByText('Cordless Drill')).toBeInTheDocument();
-    expect(screen.getByText('6ft Step Ladder')).toBeInTheDocument();
+    expect(screen.getByText('Step Ladder')).toBeInTheDocument();
     expect(screen.getByText('Socket Set')).toBeInTheDocument();
   });
 

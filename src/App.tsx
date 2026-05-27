@@ -94,14 +94,14 @@ const EXAMPLE_ITEMS: ToolItem[] = [
   },
   {
     id: 'example-ladder',
-    name: '6ft Step Ladder',
+    name: 'Step Ladder',
     category: 'Household',
     condition: 'Good',
-    notes: 'Fiberglass, rated for 250lbs',
+    notes: '',
     borrow: {
-      borrowerName: 'Mike',
-      borrowDate: '2026-05-10',
-      returnDate: '2026-05-24',
+      borrowerName: 'Maria',
+      borrowDate: '2026-05-20',
+      returnDate: '2026-06-15',
     },
   },
   {
