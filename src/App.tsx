@@ -99,7 +99,7 @@ const EXAMPLE_ITEMS: ToolItem[] = [
     condition: 'Good',
     notes: '',
     borrow: {
-      borrowerName: 'Maria',
+      borrowerName: 'Mike',
       borrowDate: '2026-05-20',
       returnDate: '2026-06-15',
     },
@@ -320,38 +320,34 @@ function AppContent() {
           </div>
         )}
 
-        {/* Item List or Empty State */}
-        {filteredItems.length === 0 ? (
+        {/* Item List or Filtered Empty State */}
+        {filteredItems.length === 0 && items.length > 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center animate-fade-in">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-tertiary text-2xl">
-              {items.length === 0 ? '🧰' : '🔍'}
+              🔍
             </div>
             <p className="text-base font-medium text-text-secondary">
-              {items.length === 0 ? 'No items' : 'No items match your filter'}
+              No items match your filter
             </p>
             <p className="mt-1 text-sm text-text-tertiary">
-              {items.length === 0
-                ? 'Click "Add Item" above to add a tool.'
-                : `You have ${items.length} item${items.length === 1 ? '' : 's'} total. Try adjusting your search or filter.`}
+              You have {items.length} item{items.length === 1 ? '' : 's'} total. Try adjusting your search or filter.
             </p>
-            {items.length > 0 && filteredItems.length === 0 && (
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                {(statusFilter !== 'all' || searchQuery) && (
-                  <button
-                    onClick={() => {
-                      setStatusFilter('all');
-                      setSearchQuery('');
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
-                  >
-                    <IconX size={12} />
-                    Clear all filters
-                  </button>
-                )}
-              </div>
-            )}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {(statusFilter !== 'all' || searchQuery) && (
+                <button
+                  onClick={() => {
+                    setStatusFilter('all');
+                    setSearchQuery('');
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
+                >
+                  <IconX size={12} />
+                  Clear all filters
+                </button>
+              )}
+            </div>
           </div>
-        ) : (
+        ) : filteredItems.length > 0 ? (
           <div className="space-y-3">
             {filteredItems.map((item) => (
               <ItemCard
@@ -364,7 +360,7 @@ function AppContent() {
               />
             ))}
           </div>
-        )}
+        ) : null}
       </main>
     </div>
   );

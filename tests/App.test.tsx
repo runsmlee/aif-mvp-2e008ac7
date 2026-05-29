@@ -72,10 +72,14 @@ describe('App', () => {
     expect(screen.getByText(/added/i)).toBeInTheDocument();
   });
 
-  it('shows empty state when all items are deleted', () => {
+  it('renders without onboarding empty state when all items are deleted', () => {
     // Set empty array in storage to simulate all items deleted
     localStorage.setItem('toolshelf-items', JSON.stringify([]));
     render(<App />);
-    expect(screen.getByText(/no items/i)).toBeInTheDocument();
+    // No onboarding empty state should appear
+    expect(screen.queryByText(/no items/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/click.*add item/i)).not.toBeInTheDocument();
+    // The Add Item button should still be accessible
+    expect(screen.getByRole('button', { name: /add new item/i })).toBeInTheDocument();
   });
 });
