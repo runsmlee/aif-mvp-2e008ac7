@@ -10,8 +10,25 @@ describe('App', () => {
     render(<App />);
     expect(screen.getByText('ToolShelf')).toBeInTheDocument();
     expect(screen.getByText('Cordless Drill')).toBeInTheDocument();
-    expect(screen.getByText('Step Ladder')).toBeInTheDocument();
+    expect(screen.getByText('6ft Step Ladder')).toBeInTheDocument();
     expect(screen.getByText('Socket Set')).toBeInTheDocument();
+  });
+
+  it('shows all pre-populated example items as Available on first load', () => {
+    render(<App />);
+    // All 3 example items should show as Available (no "Lent" or "Overdue" badges)
+    const availableBadges = screen.getAllByText('Available');
+    expect(availableBadges.length).toBe(3);
+    // Dashboard should show 3 Available, 0 Lent, 0 Overdue
+    expect(screen.getByText('3 Available')).toBeInTheDocument();
+    expect(screen.getByText('0 Lent')).toBeInTheDocument();
+    expect(screen.getByText('0 Overdue')).toBeInTheDocument();
+  });
+
+  it('renders export and import buttons for data portability', () => {
+    render(<App />);
+    expect(screen.getByLabelText(/export items/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/import items/i)).toBeInTheDocument();
   });
 
   it('renders the item list when items are present in storage', () => {

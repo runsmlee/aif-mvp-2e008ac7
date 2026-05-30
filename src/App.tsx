@@ -1,8 +1,7 @@
-import { useState, useMemo, useCallback, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from 'react';
+import { useState, useMemo, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { ToastProvider, useToast } from './hooks/useToast';
 import { Dashboard } from './components/Dashboard';
-import { SearchBar } from './components/SearchBar';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
 import { DataManagement } from './components/DataManagement';
@@ -10,11 +9,6 @@ import { DataManagement } from './components/DataManagement';
 import { IconPlus, IconX } from './components/Icon';
 import type { ToolItem, StatusFilter } from './types';
 import { getItemStatus } from './types';
-
-function isTypingInInput(e: KeyboardEvent): boolean {
-  const target = e.target as HTMLElement;
-  return target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable;
-}
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -94,15 +88,11 @@ const EXAMPLE_ITEMS: ToolItem[] = [
   },
   {
     id: 'example-ladder',
-    name: 'Step Ladder',
+    name: '6ft Step Ladder',
     category: 'Household',
     condition: 'Good',
     notes: '',
-    borrow: {
-      borrowerName: 'Mike',
-      borrowDate: '2026-05-20',
-      returnDate: '2026-06-15',
-    },
+    borrow: null,
   },
   {
     id: 'example-sockets',
@@ -127,41 +117,17 @@ export function App() {
 function AppContent() {
   const [items, setItems] = useLocalStorage<ToolItem[]>('toolshelf-items', EXAMPLE_ITEMS);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const { addToast } = useToast();
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Keyboard shortcut: "/" to focus search
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === '/' && !isTypingInInput(e)) {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      // Status filter
       if (statusFilter !== 'all' && getItemStatus(item) !== statusFilter) {
         return false;
       }
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          item.name.toLowerCase().includes(query) ||
-          item.notes.toLowerCase().includes(query) ||
-          item.category.toLowerCase().includes(query)
-        );
-      }
       return true;
     });
-  }, [items, statusFilter, searchQuery]);
+  }, [items, statusFilter]);
 
   const handleAddItem = useCallback(
     (item: ToolItem) => {
@@ -232,29 +198,11 @@ function AppContent() {
     [setItems, addToast]
   );
 
-  const handleExport = useCallback(
-    (exportItems: ToolItem[]) => {
-      const json = JSON.stringify(exportItems, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'toolshelf-export.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      addToast({ message: `${exportItems.length} item${exportItems.length === 1 ? '' : 's'} exported`, type: 'success' });
-    },
-    [addToast]
-  );
-
   const handleImport = useCallback(
     (importedItems: ToolItem[]) => {
       setItems(importedItems);
-      addToast({ message: `${importedItems.length} item${importedItems.length === 1 ? '' : 's'} imported`, type: 'success' });
     },
-    [setItems, addToast]
+    [setItems]
   );
 
   return (
@@ -284,18 +232,13 @@ function AppContent() {
 
       {/* Main Content */}
       <main id="main-content" className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
-        {/* Dashboard & Search */}
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex-1">
-            <Dashboard
-              items={items}
-              onFilter={setStatusFilter}
-              activeFilter={statusFilter}
-            />
-          </div>
-          <div className="w-full sm:w-56">
-            <SearchBar ref={searchInputRef} onSearch={setSearchQuery} value={searchQuery} />
-          </div>
+        {/* Dashboard */}
+        <div className="mb-5">
+          <Dashboard
+            items={items}
+            onFilter={setStatusFilter}
+            activeFilter={statusFilter}
+          />
         </div>
 
         {/* Actions */}
@@ -310,7 +253,7 @@ function AppContent() {
               Add Item
             </button>
           )}
-          <DataManagement items={items} onExport={handleExport} onImport={handleImport} />
+          <DataManagement items={items} onImport={handleImport} />
         </div>
 
         {/* Add Item Form */}
@@ -330,15 +273,12 @@ function AppContent() {
               No items match your filter
             </p>
             <p className="mt-1 text-sm text-text-tertiary">
-              You have {items.length} item{items.length === 1 ? '' : 's'} total. Try adjusting your search or filter.
+              You have {items.length} item{items.length === 1 ? '' : 's'} total. Try adjusting your filter.
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-              {(statusFilter !== 'all' || searchQuery) && (
+              {statusFilter !== 'all' && (
                 <button
-                  onClick={() => {
-                    setStatusFilter('all');
-                    setSearchQuery('');
-                  }}
+                  onClick={() => setStatusFilter('all')}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
                 >
                   <IconX size={12} />

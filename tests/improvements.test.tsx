@@ -295,24 +295,3 @@ describe('Empty state with active filters', () => {
   });
 });
 
-describe('Keyboard shortcut for search', () => {
-  it('focuses search input when "/" is pressed', () => {
-    render(<App />);
-    const searchInput = screen.getByLabelText(/search items/i);
-    expect(searchInput).not.toHaveFocus();
-
-    fireEvent.keyDown(document, { key: '/' });
-    expect(searchInput).toHaveFocus();
-  });
-
-  it('does not focus search when "/" is pressed inside an input', () => {
-    render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /add new item/i }));
-    const nameInput = screen.getByLabelText(/item name/i);
-    nameInput.focus();
-    expect(nameInput).toHaveFocus();
-
-    fireEvent.keyDown(nameInput, { key: '/' });
-    expect(nameInput).toHaveFocus();
-  });
-});

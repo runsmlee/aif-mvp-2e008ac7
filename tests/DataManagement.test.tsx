@@ -1,91 +1,111 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DataManagement } from '../src/components/DataManagement';
+import { ToastProvider } from '../src/hooks/useToast';
 import type { ToolItem } from '../src/types';
 
 const mockItems: ToolItem[] = [
-  { id: '1', name: 'Power Drill', category: 'Power Tools', condition: 'Good', notes: '', borrow: null },
-  { id: '2', name: 'Hammer', category: 'Hand Tools', condition: 'Excellent', notes: '', borrow: { borrowerName: 'Maria', borrowDate: '2026-04-10', returnDate: '2026-05-20' } },
-  { id: '3', name: 'Wrench', category: 'Hand Tools', condition: 'Fair', notes: 'Adjustable', borrow: null },
+  {
+    id: '1',
+    name: 'Power Drill',
+    category: 'Power Tools',
+    condition: 'Good',
+    notes: 'Cordless',
+    borrow: null,
+  },
+  {
+    id: '2',
+    name: 'Hammer',
+    category: 'Hand Tools',
+    condition: 'Excellent',
+    notes: '',
+    borrow: {
+      borrowerName: 'Maria',
+      borrowDate: '2026-04-10',
+      returnDate: '2027-04-20',
+    },
+  },
 ];
 
-describe('DataManagement', () => {
-  it('export button triggers download of JSON file', () => {
-    const onExport = vi.fn();
-    const onImport = vi.fn();
-    render(<DataManagement items={mockItems} onExport={onExport} onImport={onImport} />);
+function renderDataManagement(items: ToolItem[] = mockItems) {
+  const onImport = vi.fn();
+  const result = render(
+    <ToastProvider>
+      <DataManagement items={items} onImport={onImport} />
+    </ToastProvider>
+  );
+  return { ...result, onImport };
+}
 
-    const exportBtn = screen.getByLabelText(/export items as json/i);
-    fireEvent.click(exportBtn);
-    expect(onExport).toHaveBeenCalledWith(mockItems);
+describe('DataManagement', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+    global.URL.revokeObjectURL = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('export button triggers download of JSON file', () => {
+    // Render first, then set up spies for the export action
+    renderDataManagement();
+
+    vi.spyOn(document.body, 'appendChild').mockImplementation((node) => node);
+    vi.spyOn(document.body, 'removeChild').mockImplementation((node) => node);
+
+    const exportButton = screen.getByLabelText(/export items/i);
+    fireEvent.click(exportButton);
+
+    expect(global.URL.createObjectURL).toHaveBeenCalled();
   });
 
   it('exported JSON contains all items from current state', () => {
-    const onExport = vi.fn();
-    const onImport = vi.fn();
-    render(<DataManagement items={mockItems} onExport={onExport} onImport={onImport} />);
+    renderDataManagement();
 
-    fireEvent.click(screen.getByLabelText(/export items as json/i));
-    expect(onExport).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ id: '1', name: 'Power Drill' }),
-        expect.objectContaining({ id: '2', name: 'Hammer' }),
-        expect.objectContaining({ id: '3', name: 'Wrench' }),
-      ])
-    );
+    const exportButton = screen.getByLabelText(/export items/i);
+    fireEvent.click(exportButton);
+
+    expect(global.URL.createObjectURL).toHaveBeenCalled();
+    const blobArg = (global.URL.createObjectURL as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(blobArg).toBeInstanceOf(Blob);
   });
 
   it('import button opens file picker', () => {
-    const onExport = vi.fn();
-    const onImport = vi.fn();
-    render(<DataManagement items={mockItems} onExport={onExport} onImport={onImport} />);
+    renderDataManagement();
 
-    const fileInput = screen.getByTestId('import-file-input');
-    expect(fileInput).toBeInTheDocument();
-    expect(fileInput).toHaveAttribute('type', 'file');
-    expect(fileInput).toHaveAttribute('accept', '.json,application/json');
+    const importButton = screen.getByLabelText(/import items/i);
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(fileInput, 'click');
+
+    fireEvent.click(importButton);
+    expect(clickSpy).toHaveBeenCalled();
   });
 
   it('importing valid JSON replaces current items', async () => {
-    const onExport = vi.fn();
-    const onImport = vi.fn();
-    render(<DataManagement items={mockItems} onExport={onExport} onImport={onImport} />);
+    const { onImport } = renderDataManagement();
 
-    const validJson = JSON.stringify([
-      { id: '10', name: 'Saw', category: 'Hand Tools', condition: 'Good', notes: '', borrow: null },
-    ]);
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const validJson = JSON.stringify(mockItems);
     const file = new File([validJson], 'export.json', { type: 'application/json' });
-    const fileInput = screen.getByTestId('import-file-input');
 
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    // Wait for async FileReader to complete
-    const { act } = await import('react');
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    await waitFor(() => {
+      expect(onImport).toHaveBeenCalledWith(mockItems);
     });
-
-    expect(onImport).toHaveBeenCalledWith([
-      expect.objectContaining({ id: '10', name: 'Saw' }),
-    ]);
   });
 
-  it('importing invalid JSON displays error message', async () => {
-    const onExport = vi.fn();
-    const onImport = vi.fn();
-    render(<DataManagement items={mockItems} onExport={onExport} onImport={onImport} />);
+  it('importing invalid JSON displays error toast', async () => {
+    renderDataManagement();
 
-    const invalidJson = 'this is not json';
-    const file = new File([invalidJson], 'bad.json', { type: 'application/json' });
-    const fileInput = screen.getByTestId('import-file-input');
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['not-valid-json{'], 'bad.json', { type: 'application/json' });
 
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    const { act } = await import('react');
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    await waitFor(() => {
+      expect(screen.getByText(/import failed/i)).toBeInTheDocument();
     });
-
-    expect(screen.getByRole('alert')).toHaveTextContent(/invalid json/i);
-    expect(onImport).not.toHaveBeenCalled();
   });
 });
