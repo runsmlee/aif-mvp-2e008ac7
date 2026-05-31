@@ -1,7 +1,6 @@
 import { useRef, useCallback } from 'react';
-import { IconDownload, IconUpload } from './Icon';
-import { useToast } from '../hooks/useToast';
 import type { ToolItem } from '../types';
+import { IconDownload, IconUpload } from './Icon';
 
 interface DataManagementProps {
   items: ToolItem[];
@@ -10,7 +9,6 @@ interface DataManagementProps {
 
 export function DataManagement({ items, onImport }: DataManagementProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { addToast } = useToast();
 
   const handleExport = useCallback(() => {
     const json = JSON.stringify(items, null, 2);
@@ -23,8 +21,7 @@ export function DataManagement({ items, onImport }: DataManagementProps) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    addToast({ message: `Exported ${items.length} item${items.length === 1 ? '' : 's'}`, type: 'success' });
-  }, [items, addToast]);
+  }, [items]);
 
   const handleImportClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -40,55 +37,47 @@ export function DataManagement({ items, onImport }: DataManagementProps) {
         try {
           const content = event.target?.result;
           if (typeof content !== 'string') {
-            throw new Error('Failed to read file');
+            onImport([]);
+            return;
           }
           const parsed = JSON.parse(content);
-
           if (!Array.isArray(parsed)) {
-            throw new Error('Invalid format: expected an array of items');
+            throw new Error('Invalid data format: expected an array');
           }
-
-          // Basic validation: ensure each item has required fields
-          for (const item of parsed) {
-            if (typeof item !== 'object' || item === null || !item.id || !item.name) {
-              throw new Error('Invalid item format: each item must have id and name');
-            }
-          }
-
           onImport(parsed as ToolItem[]);
-          addToast({
-            message: `Imported ${parsed.length} item${parsed.length === 1 ? '' : 's'}`,
-            type: 'success',
-          });
-        } catch (err) {
-          const message = err instanceof Error ? err.message : 'Invalid JSON file';
-          addToast({ message: `Import failed: ${message}`, type: 'error' });
+        } catch {
+          // Signal error to parent via callback with original items
+          onImport(items);
+          // Dispatch a custom event that the parent can listen to for error notification
+          window.dispatchEvent(
+            new CustomEvent('toolshelf-import-error', {
+              detail: { message: 'Invalid JSON file. Please check the file and try again.' },
+            })
+          );
         }
       };
       reader.readAsText(file);
 
-      // Reset input so the same file can be re-imported
+      // Reset the input so the same file can be selected again
       e.target.value = '';
     },
-    [onImport, addToast]
+    [onImport, items]
   );
 
   return (
-    <>
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Data management">
       <button
         onClick={handleExport}
-        aria-label="Export items"
-        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
-        type="button"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2.5 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.97]"
+        aria-label="Export inventory as JSON"
       >
         <IconDownload size={14} />
         Export
       </button>
       <button
         onClick={handleImportClick}
-        aria-label="Import items"
-        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.98]"
-        type="button"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3.5 py-2.5 text-xs font-medium text-text-secondary transition-all duration-200 hover:bg-surface-tertiary hover:border-border-hover active:scale-[0.97]"
+        aria-label="Import inventory from JSON"
       >
         <IconUpload size={14} />
         Import
@@ -100,8 +89,8 @@ export function DataManagement({ items, onImport }: DataManagementProps) {
         onChange={handleFileChange}
         className="hidden"
         aria-hidden="true"
-        tabIndex={-1}
+        data-testid="import-file-input"
       />
-    </>
+    </div>
   );
 }

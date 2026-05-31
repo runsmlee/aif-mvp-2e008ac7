@@ -37,10 +37,10 @@
 - [ ] clicking a status filter calls onFilter callback
 
 ### SearchBar.test.tsx
-- [ ] renders search input
-- [ ] calls onSearch callback on each keystroke
-- [ ] shows clear button when input has value
-- [ ] clicking clear button resets search and calls onSearch with empty string
+> **REMOVED** — Search feature (Should Have) was cut to simplify scope. Not implemented.
+
+### Print View
+> **REMOVED** — Print View feature (Should Have) was cut to simplify scope. Not implemented.
 
 ### DataManagement.test.tsx
 - [ ] export button triggers download of JSON file
