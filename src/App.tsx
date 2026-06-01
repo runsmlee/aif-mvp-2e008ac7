@@ -95,7 +95,7 @@ const EXAMPLE_ITEMS: ToolItem[] = [
     borrow: {
       borrowerName: 'Maria',
       borrowDate: '2026-05-28',
-      returnDate: '2026-06-05',
+      returnDate: '2026-06-01',
     },
   },
   {
