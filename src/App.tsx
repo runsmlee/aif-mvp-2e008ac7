@@ -1,10 +1,9 @@
-import { useState, useMemo, useCallback, useEffect, Component, type ReactNode, type ErrorInfo } from 'react';
+import { useState, useMemo, useCallback, Component, type ReactNode, type ErrorInfo } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { ToastProvider, useToast } from './hooks/useToast';
 import { Dashboard } from './components/Dashboard';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
-import { DataManagement } from './components/DataManagement';
 
 import { IconPlus, IconX } from './components/Icon';
 import type { ToolItem, StatusFilter } from './types';
@@ -95,7 +94,7 @@ const EXAMPLE_ITEMS: ToolItem[] = [
     borrow: {
       borrowerName: 'Maria',
       borrowDate: '2026-05-28',
-      returnDate: '2026-06-01',
+      returnDate: '2026-06-15',
     },
   },
   {
@@ -202,24 +201,6 @@ function AppContent() {
     [setItems, addToast]
   );
 
-  const handleImport = useCallback(
-    (importedItems: ToolItem[]) => {
-      setItems(importedItems);
-      addToast({ message: `${importedItems.length} item${importedItems.length === 1 ? '' : 's'} imported`, type: 'success' });
-    },
-    [setItems, addToast]
-  );
-
-  // Listen for import errors from DataManagement
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ message: string }>).detail;
-      addToast({ message: detail.message, type: 'error' });
-    };
-    window.addEventListener('toolshelf-import-error', handler);
-    return () => window.removeEventListener('toolshelf-import-error', handler);
-  }, [addToast]);
-
   return (
     <div className="flex min-h-screen flex-col bg-surface-secondary">
       {/* Skip to content link for keyboard users */}
@@ -268,7 +249,6 @@ function AppContent() {
               Add Item
             </button>
           )}
-          <DataManagement items={items} onImport={handleImport} />
         </div>
 
         {/* Add Item Form */}
