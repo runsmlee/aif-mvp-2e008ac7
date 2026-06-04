@@ -16,12 +16,12 @@ describe('App', () => {
 
   it('shows pre-populated example items with correct statuses on first load', () => {
     render(<App />);
-    // Cordless Drill and Socket Set should be Available, Step Ladder should be Lent
+    // Step Ladder and Socket Set should be Available, Cordless Drill should be Lent
     const availableBadges = screen.getAllByText('Available');
     expect(availableBadges.length).toBe(2);
     expect(screen.getByText('Lent')).toBeInTheDocument();
-    // Step Ladder is lent to Maria
-    expect(screen.getByText(/Maria/)).toBeInTheDocument();
+    // Cordless Drill is lent to Marcus
+    expect(screen.getByText(/Marcus/)).toBeInTheDocument();
     // Dashboard should show 2 Available, 1 Lent, 0 Overdue
     expect(screen.getByText('2 Available')).toBeInTheDocument();
     expect(screen.getByText('1 Lent')).toBeInTheDocument();
@@ -35,7 +35,6 @@ describe('App', () => {
         name: 'Power Drill',
         category: 'Power Tools',
         condition: 'Good',
-        notes: '',
         borrow: null,
       },
     ];
@@ -51,7 +50,6 @@ describe('App', () => {
         name: 'Power Drill',
         category: 'Power Tools',
         condition: 'Good',
-        notes: '',
         borrow: null,
       },
       {
@@ -59,7 +57,6 @@ describe('App', () => {
         name: 'Hammer',
         category: 'Hand Tools',
         condition: 'Excellent',
-        notes: '',
         borrow: {
           borrowerName: 'Maria',
           borrowDate: '2026-04-10',
@@ -86,14 +83,13 @@ describe('App', () => {
     expect(screen.getByText(/added/i)).toBeInTheDocument();
   });
 
-  it('renders without onboarding empty state when all items are deleted', () => {
+  it('renders empty state when all items are deleted', () => {
     // Set empty array in storage to simulate all items deleted
     localStorage.setItem('toolshelf-items', JSON.stringify([]));
     render(<App />);
-    // No onboarding empty state should appear
-    expect(screen.queryByText(/no items/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/click.*add item/i)).not.toBeInTheDocument();
+    // Empty state should appear
+    expect(screen.getByText(/your shelf is empty/i)).toBeInTheDocument();
     // The Add Item button should still be accessible
-    expect(screen.getByRole('button', { name: /add new item/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add your first item/i })).toBeInTheDocument();
   });
 });

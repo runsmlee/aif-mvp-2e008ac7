@@ -8,7 +8,6 @@ const mockItems: ToolItem[] = [
     name: 'Power Drill',
     category: 'Power Tools',
     condition: 'Good',
-    notes: 'Cordless',
     borrow: null,
   },
   {
@@ -16,7 +15,6 @@ const mockItems: ToolItem[] = [
     name: 'Hammer',
     category: 'Hand Tools',
     condition: 'Excellent',
-    notes: '',
     borrow: {
       borrowerName: 'Maria',
       borrowDate: '2026-04-10',
@@ -26,81 +24,80 @@ const mockItems: ToolItem[] = [
 ];
 
 describe('DataManagement', () => {
-  beforeEach(() => {
-    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+  it('renders export and import buttons', () => {
+    render(<DataManagement items={mockItems} onImport={vi.fn()} onError={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /import/i })).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  it('export button creates JSON blob with all items', () => {
+    // Mock URL APIs only
+    const mockUrl = 'blob:http://localhost/mock';
+    global.URL.createObjectURL = vi.fn(() => mockUrl);
+    global.URL.revokeObjectURL = vi.fn();
+
+    render(<DataManagement items={mockItems} onImport={vi.fn()} onError={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /export/i }));
+
+    expect(global.URL.createObjectURL).toHaveBeenCalledTimes(1);
+    const blob = global.URL.createObjectURL.mock.calls[0][0] as Blob;
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe('application/json');
+
+    // Read the blob content to verify it contains our items
+    return blob.text().then((text) => {
+      const parsed = JSON.parse(text);
+      expect(parsed).toHaveLength(2);
+      expect(parsed[0].name).toBe('Power Drill');
+      expect(parsed[1].name).toBe('Hammer');
+    });
   });
 
-  it('export button triggers download of JSON file', () => {
-    render(<DataManagement items={mockItems} onImport={vi.fn()} />);
-    const exportBtn = screen.getByRole('button', { name: /export/i });
-    expect(exportBtn).toBeInTheDocument();
-    // Click export — should not throw
-    fireEvent.click(exportBtn);
-    expect(URL.createObjectURL).toHaveBeenCalled();
-  });
+  it('import button opens file picker by clicking hidden file input', () => {
+    render(<DataManagement items={mockItems} onImport={vi.fn()} onError={vi.fn()} />);
 
-  it('exported JSON contains all items from current state', () => {
-    render(<DataManagement items={mockItems} onImport={vi.fn()} />);
-    const exportBtn = screen.getByRole('button', { name: /export/i });
-    fireEvent.click(exportBtn);
-
-    // createObjectURL should have been called with a Blob
-    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
-    const blobArg = (URL.createObjectURL as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    expect(blobArg).toBeInstanceOf(Blob);
-  });
-
-  it('import button opens file picker', () => {
-    render(<DataManagement items={mockItems} onImport={vi.fn()} />);
     const fileInput = screen.getByTestId('import-file-input');
-    const clickSpy = vi.spyOn(fileInput, 'click').mockImplementation(() => {});
+    const clickSpy = vi.spyOn(fileInput, 'click');
 
     fireEvent.click(screen.getByRole('button', { name: /import/i }));
+
     expect(clickSpy).toHaveBeenCalled();
-
-    clickSpy.mockRestore();
   });
 
-  it('importing valid JSON replaces current items', async () => {
+  it('importing valid JSON calls onImport with parsed items', async () => {
     const onImport = vi.fn();
-    render(<DataManagement items={mockItems} onImport={onImport} />);
+    render(<DataManagement items={mockItems} onImport={onImport} onError={vi.fn()} />);
 
-    const file = new File([JSON.stringify(mockItems)], 'export.json', {
-      type: 'application/json',
-    });
     const fileInput = screen.getByTestId('import-file-input');
+
+    const validJson = JSON.stringify(mockItems);
+    const file = new File([validJson], 'export.json', { type: 'application/json' });
 
     fireEvent.change(fileInput, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(onImport).toHaveBeenCalledWith(mockItems);
+      expect(onImport).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Power Drill' }),
+          expect.objectContaining({ name: 'Hammer' }),
+        ])
+      );
     });
   });
 
-  it('importing invalid JSON displays error toast/message', async () => {
-    const onImport = vi.fn();
-    const errorListener = vi.fn();
-    window.addEventListener('toolshelf-import-error', errorListener);
+  it('importing invalid JSON calls onError with message', async () => {
+    const onError = vi.fn();
+    render(<DataManagement items={mockItems} onImport={vi.fn()} onError={onError} />);
 
-    render(<DataManagement items={mockItems} onImport={onImport} />);
-
-    const file = new File(['not valid json{'], 'bad.json', {
-      type: 'application/json',
-    });
     const fileInput = screen.getByTestId('import-file-input');
+
+    const file = new File(['not valid json{'], 'bad.json', { type: 'application/json' });
 
     fireEvent.change(fileInput, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(errorListener).toHaveBeenCalled();
-      expect(errorListener.mock.calls[0][0].detail.message).toMatch(/invalid json/i);
+      expect(onError).toHaveBeenCalledWith(expect.stringContaining('Invalid'));
     });
-
-    window.removeEventListener('toolshelf-import-error', errorListener);
   });
 });

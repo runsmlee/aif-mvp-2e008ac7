@@ -2,12 +2,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ItemForm } from '../src/components/ItemForm';
 
 describe('ItemForm', () => {
-  it('renders all input fields (name, category, condition, notes) and submit button', () => {
+  it('renders all input fields (name, category, condition) and submit button', () => {
     render(<ItemForm onAdd={vi.fn()} />);
     expect(screen.getByLabelText(/Item name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Category/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Condition/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Notes/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument();
   });
 
@@ -23,16 +22,12 @@ describe('ItemForm', () => {
     fireEvent.change(screen.getByLabelText(/Condition/i), {
       target: { value: 'Good' },
     });
-    fireEvent.change(screen.getByLabelText(/Notes/i), {
-      target: { value: 'Works great' },
-    });
     fireEvent.click(screen.getByRole('button', { name: /add/i }));
     expect(onAdd).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Power Drill',
         category: 'Power Tools',
         condition: 'Good',
-        notes: 'Works great',
       })
     );
   });

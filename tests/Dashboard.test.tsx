@@ -8,7 +8,6 @@ const mockItems: ToolItem[] = [
     name: 'Power Drill',
     category: 'Power Tools',
     condition: 'Good',
-    notes: '',
     borrow: null,
   },
   {
@@ -16,7 +15,6 @@ const mockItems: ToolItem[] = [
     name: 'Hammer',
     category: 'Hand Tools',
     condition: 'Excellent',
-    notes: '',
     borrow: {
       borrowerName: 'Maria',
       borrowDate: '2026-04-10',
@@ -28,7 +26,6 @@ const mockItems: ToolItem[] = [
     name: 'Ladder',
     category: 'Household',
     condition: 'Fair',
-    notes: '',
     borrow: {
       borrowerName: 'John',
       borrowDate: '2026-04-01',

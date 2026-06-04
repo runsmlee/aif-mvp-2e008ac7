@@ -7,7 +7,6 @@ const availableItem: ToolItem = {
   name: 'Power Drill',
   category: 'Power Tools',
   condition: 'Good',
-  notes: 'Cordless',
   borrow: null,
 };
 
@@ -16,7 +15,6 @@ const lentItem: ToolItem = {
   name: 'Hammer',
   category: 'Hand Tools',
   condition: 'Excellent',
-  notes: '',
   borrow: {
     borrowerName: 'Maria',
     borrowDate: '2026-04-10',
@@ -29,7 +27,6 @@ const overdueItem: ToolItem = {
   name: 'Ladder',
   category: 'Household',
   condition: 'Fair',
-  notes: '',
   borrow: {
     borrowerName: 'John',
     borrowDate: '2026-04-01',
@@ -74,7 +71,7 @@ describe('ItemCard', () => {
     render(
       <ItemCard item={availableItem} onBorrow={vi.fn()} onReturn={vi.fn()} onDelete={vi.fn()} onUpdate={vi.fn()} />
     );
-    fireEvent.click(screen.getByRole('button', { name: /borrow/i }));
+    fireEvent.click(screen.getByRole('button', { name: /lend/i }));
     expect(screen.getByLabelText(/Borrower name/i)).toBeInTheDocument();
   });
 

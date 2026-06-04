@@ -54,7 +54,6 @@ describe('Escape key handling', () => {
       name: 'Drill',
       category: 'Power Tools',
       condition: 'Good',
-      notes: '',
       borrow: null,
     };
     render(
@@ -62,7 +61,7 @@ describe('Escape key handling', () => {
     );
 
     // Open borrow form
-    fireEvent.click(screen.getByRole('button', { name: /borrow/i }));
+    fireEvent.click(screen.getByRole('button', { name: /lend/i }));
     expect(screen.getByLabelText(/Borrower name/i)).toBeInTheDocument();
 
     // Press Escape to close
@@ -76,7 +75,6 @@ describe('Escape key handling', () => {
       name: 'Drill',
       category: 'Power Tools',
       condition: 'Good',
-      notes: '',
       borrow: null,
     };
     render(
@@ -99,7 +97,6 @@ describe('Escape key handling', () => {
       name: 'Drill',
       category: 'Power Tools',
       condition: 'Good',
-      notes: '',
       borrow: null,
     };
     render(
@@ -127,7 +124,6 @@ describe('Edit form validation', () => {
       name: 'Drill',
       category: 'Power Tools',
       condition: 'Good',
-      notes: '',
       borrow: null,
     };
     render(
@@ -153,8 +149,8 @@ describe('Edit form validation', () => {
 // ============================================================
 describe('Dashboard accessibility', () => {
   const mockItems: ToolItem[] = [
-    { id: '1', name: 'Drill', category: 'Power Tools', condition: 'Good', notes: '', borrow: null },
-    { id: '2', name: 'Hammer', category: 'Hand Tools', condition: 'Good', notes: '', borrow: { borrowerName: 'Maria', borrowDate: '2026-04-10', returnDate: '2027-04-20' } },
+    { id: '1', name: 'Drill', category: 'Power Tools', condition: 'Good', borrow: null },
+    { id: '2', name: 'Hammer', category: 'Hand Tools', condition: 'Good', borrow: { borrowerName: 'Maria', borrowDate: '2026-04-10', returnDate: '2027-04-20' } },
   ];
 
   it('status filter buttons have aria-pressed attribute', () => {
@@ -187,7 +183,6 @@ describe('Delete confirmation dialog', () => {
       name: 'Drill',
       category: 'Power Tools',
       condition: 'Good',
-      notes: '',
       borrow: null,
     };
     render(
@@ -215,7 +210,6 @@ describe('Overdue logic improvements', () => {
       name: 'Wrench',
       category: 'Hand Tools',
       condition: 'Good',
-      notes: '',
       borrow: {
         borrowerName: 'Alice',
         borrowDate: '2026-04-01',
@@ -234,7 +228,6 @@ describe('Overdue logic improvements', () => {
       name: 'Saw',
       category: 'Hand Tools',
       condition: 'Fair',
-      notes: '',
       borrow: {
         borrowerName: 'Bob',
         borrowDate: '2026-04-01',
@@ -253,7 +246,6 @@ describe('Overdue logic improvements', () => {
       name: 'Drill',
       category: 'Power Tools',
       condition: 'Good',
-      notes: '',
       borrow: {
         borrowerName: 'Carol',
         borrowDate: '2026-04-01',
@@ -267,8 +259,8 @@ describe('Overdue logic improvements', () => {
 describe('Empty state with active filters', () => {
   it('shows total item count when filters produce no results', () => {
     const items = [
-      { id: '1', name: 'Power Drill', category: 'Power Tools', condition: 'Good', notes: '', borrow: null },
-      { id: '2', name: 'Hammer', category: 'Hand Tools', condition: 'Good', notes: '', borrow: null },
+      { id: '1', name: 'Power Drill', category: 'Power Tools', condition: 'Good', borrow: null },
+      { id: '2', name: 'Hammer', category: 'Hand Tools', condition: 'Good', borrow: null },
     ];
     localStorage.setItem('toolshelf-items', JSON.stringify(items));
     render(<App />);
@@ -283,7 +275,7 @@ describe('Empty state with active filters', () => {
 
   it('shows "Clear all filters" button when filters are active and no results', () => {
     const items = [
-      { id: '1', name: 'Power Drill', category: 'Power Tools', condition: 'Good', notes: '', borrow: null },
+      { id: '1', name: 'Power Drill', category: 'Power Tools', condition: 'Good', borrow: null },
     ];
     localStorage.setItem('toolshelf-items', JSON.stringify(items));
     render(<App />);
@@ -294,4 +286,3 @@ describe('Empty state with active filters', () => {
     expect(screen.getByRole('button', { name: /clear all filters/i })).toBeInTheDocument();
   });
 });
-

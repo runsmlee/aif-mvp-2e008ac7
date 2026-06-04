@@ -4,6 +4,7 @@ import { ToastProvider, useToast } from './hooks/useToast';
 import { Dashboard } from './components/Dashboard';
 import { ItemForm } from './components/ItemForm';
 import { ItemCard } from './components/ItemCard';
+import { DataManagement } from './components/DataManagement';
 
 import { IconPlus, IconX } from './components/Icon';
 import type { ToolItem, StatusFilter } from './types';
@@ -82,27 +83,24 @@ const EXAMPLE_ITEMS: ToolItem[] = [
     name: 'Cordless Drill',
     category: 'Power Tools',
     condition: 'Good',
-    notes: 'Includes charger and bit set',
-    borrow: null,
+    borrow: {
+      borrowerName: 'Marcus',
+      borrowDate: '2026-05-28',
+      returnDate: '2026-06-05',
+    },
   },
   {
     id: 'example-ladder',
     name: 'Step Ladder',
     category: 'Household',
     condition: 'Good',
-    notes: '6ft, non-slip feet',
-    borrow: {
-      borrowerName: 'Maria',
-      borrowDate: '2026-05-28',
-      returnDate: '2026-06-15',
-    },
+    borrow: null,
   },
   {
     id: 'example-sockets',
     name: 'Socket Set',
     category: 'Hand Tools',
     condition: 'Excellent',
-    notes: 'Metric and SAE, 42-piece',
     borrow: null,
   },
 ];
@@ -201,6 +199,21 @@ function AppContent() {
     [setItems, addToast]
   );
 
+  const handleImport = useCallback(
+    (importedItems: ToolItem[]) => {
+      setItems(importedItems);
+      addToast({ message: `Imported ${importedItems.length} item${importedItems.length === 1 ? '' : 's'}`, type: 'success' });
+    },
+    [setItems, addToast]
+  );
+
+  const handleImportError = useCallback(
+    (message: string) => {
+      addToast({ message, type: 'error' });
+    },
+    [addToast]
+  );
+
   return (
     <div className="flex min-h-screen flex-col bg-surface-secondary">
       {/* Skip to content link for keyboard users */}
@@ -213,7 +226,7 @@ function AppContent() {
 
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-surface/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-2xl items-center px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white text-base shadow-sm shadow-brand/25">
               🔧
@@ -222,7 +235,7 @@ function AppContent() {
               ToolShelf
             </h1>
           </div>
-
+          <DataManagement items={items} onImport={handleImport} onError={handleImportError} />
         </div>
       </header>
 
@@ -258,8 +271,26 @@ function AppContent() {
           </div>
         )}
 
-        {/* Item List or Filtered Empty State */}
-        {filteredItems.length === 0 && items.length > 0 ? (
+        {/* Item List / Empty State / Filtered Empty State */}
+        {items.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center animate-fade-in">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-tertiary text-2xl">
+              🔧
+            </div>
+            <h2 className="text-base font-semibold text-text-primary">Your shelf is empty</h2>
+            <p className="mt-2 text-sm text-text-secondary">
+              Add your first tool to start tracking your shared inventory.
+            </p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand/20 transition-all duration-200 hover:bg-brand-dark hover:shadow-md hover:shadow-brand/25 active:scale-[0.98]"
+              aria-label="Add your first item"
+            >
+              <IconPlus size={16} />
+              Add Your First Item
+            </button>
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center animate-fade-in">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-tertiary text-2xl">
               🔍
@@ -282,7 +313,7 @@ function AppContent() {
               )}
             </div>
           </div>
-        ) : filteredItems.length > 0 ? (
+        ) : (
           <div className="space-y-3">
             {filteredItems.map((item) => (
               <ItemCard
@@ -295,7 +326,7 @@ function AppContent() {
               />
             ))}
           </div>
-        ) : null}
+        )}
       </main>
     </div>
   );

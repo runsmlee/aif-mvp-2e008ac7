@@ -11,7 +11,6 @@ export function ItemForm({ onAdd, onCancel }: ItemFormProps) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState<ItemCategory>('Power Tools');
   const [condition, setCondition] = useState<ItemCondition>('Good');
-  const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -33,11 +32,9 @@ export function ItemForm({ onAdd, onCancel }: ItemFormProps) {
       name: name.trim(),
       category,
       condition,
-      notes: notes.trim(),
       borrow: null,
     });
     setName('');
-    setNotes('');
     setError('');
   };
 
@@ -101,21 +98,6 @@ export function ItemForm({ onAdd, onCancel }: ItemFormProps) {
             ))}
           </select>
         </div>
-      </div>
-
-      <div>
-        <label htmlFor="item-notes" className="mb-1.5 block text-xs font-medium text-text-secondary">
-          Notes
-        </label>
-        <textarea
-          id="item-notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={2}
-          className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-text-primary transition-all duration-200 placeholder:text-text-tertiary hover:border-border-hover focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
-          placeholder="Optional notes..."
-          aria-label="Notes"
-        />
       </div>
 
       <div className="flex gap-2 pt-1">

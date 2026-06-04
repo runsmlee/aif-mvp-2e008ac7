@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, memo, type FormEvent, type KeyboardEvent }
 import type { ToolItem, ItemCategory, ItemCondition } from '../types';
 import { getItemStatus, CATEGORIES, CONDITIONS } from '../types';
 import { BorrowForm } from './BorrowForm';
-import { IconCategory, IconUser, IconUsers, IconEdit, IconTrash, IconCheckSquare } from './Icon';
+import { IconCategory, IconUser, IconEdit, IconTrash, IconCheckSquare } from './Icon';
 
 interface ItemCardProps {
   item: ToolItem;
@@ -24,7 +24,6 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
   const [editName, setEditName] = useState(item.name);
   const [editCategory, setEditCategory] = useState<ItemCategory>(item.category);
   const [editCondition, setEditCondition] = useState<ItemCondition>(item.condition);
-  const [editNotes, setEditNotes] = useState(item.notes);
   const [editError, setEditError] = useState('');
   const editNameRef = useRef<HTMLInputElement>(null);
   const confirmDeleteRef = useRef<HTMLDivElement>(null);
@@ -34,8 +33,7 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
     setEditName(item.name);
     setEditCategory(item.category);
     setEditCondition(item.condition);
-    setEditNotes(item.notes);
-  }, [item.name, item.category, item.condition, item.notes]);
+  }, [item.name, item.category, item.condition]);
 
   // Auto-focus edit name input
   useEffect(() => {
@@ -69,7 +67,6 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
       name: editName.trim(),
       category: editCategory,
       condition: editCondition,
-      notes: editNotes,
     });
     setIsEditing(false);
     setEditError('');
@@ -79,7 +76,6 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
     setEditName(item.name);
     setEditCategory(item.category);
     setEditCondition(item.condition);
-    setEditNotes(item.notes);
     setIsEditing(false);
     setEditError('');
   };
@@ -188,16 +184,6 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
               </select>
             </div>
           </div>
-          <div>
-            <label htmlFor={`edit-notes-${item.id}`} className="mb-1.5 block text-xs font-medium text-text-secondary">Notes</label>
-            <textarea
-              id={`edit-notes-${item.id}`}
-              value={editNotes}
-              onChange={(e) => setEditNotes(e.target.value)}
-              rows={2}
-              className="w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-text-primary transition-all duration-200 hover:border-border-hover focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
-            />
-          </div>
           <div className="flex gap-2 pt-1">
             <button
               type="submit"
@@ -231,7 +217,6 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
             <span className="text-text-tertiary" aria-hidden="true">·</span>
             <span className="text-xs text-text-secondary">{item.condition}</span>
           </div>
-          {item.notes && <p className="mt-2 text-xs leading-relaxed text-text-tertiary">{item.notes}</p>}
         </div>
         {statusBadge()}
       </div>
@@ -263,9 +248,9 @@ export const ItemCard = memo(function ItemCard({ item, onBorrow, onReturn, onDel
             <button
               onClick={() => setShowBorrowForm(true)}
               className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-amber-600 hover:shadow-sm active:scale-[0.97]"
-              aria-label={`Borrow ${item.name}`}
+              aria-label={`Lend ${item.name}`}
             >
-              <IconUsers size={14} />
+              <IconUser size={14} />
               Lend Out
             </button>
           )}

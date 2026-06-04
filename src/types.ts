@@ -15,7 +15,6 @@ export interface ToolItem {
   name: string;
   category: ItemCategory;
   condition: ItemCondition;
-  notes: string;
   borrow: BorrowRecord | null;
 }
 
